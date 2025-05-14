@@ -2,9 +2,10 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-import org.springframework.lang.NonNull;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -12,10 +13,15 @@ import java.time.LocalDate;
 @Data
 public class Film {
     Long id;
-    @NonNull
+
+    @NotBlank
     String name;
+
+    @Size(max = 200)
     String description;
     LocalDate releaseDate;
+
+    @Positive
     Long duration;
 
     @JsonCreator
@@ -29,7 +35,6 @@ public class Film {
         this.name = name;
         try {
             Integer parseDuration = Integer.parseInt(duration);
-            if (parseDuration < 0) throw new ValidationException("Продолжительность фильма должна быть положительной");
             this.duration = Duration.ofMinutes(parseDuration).toMinutes();
         } catch (NumberFormatException e) {
             this.duration = Duration.parse(duration).toMinutes();
