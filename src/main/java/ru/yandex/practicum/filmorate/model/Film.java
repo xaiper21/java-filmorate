@@ -26,7 +26,7 @@ public class Film {
 
     @JsonCreator
     public Film(@JsonProperty("name") String name,
-                @JsonProperty("description") String description,
+                  @JsonProperty("description") String description,
                 @JsonProperty("releaseDate") LocalDate releaseDate,
                 @JsonProperty("duration") String duration) {
 
