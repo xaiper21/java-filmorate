@@ -39,8 +39,8 @@ public class Film {
             this.duration = Duration.ofMinutes(parseDuration).toMinutes();
         } catch (NumberFormatException e) {
             this.duration = Duration.parse(duration).toMinutes();
-        }catch (Exception e){
-            throw  new ValidationException(e.getMessage());
+        } catch (Exception e) {
+            throw new ValidationException(e.getMessage());
         }
     }
 }
