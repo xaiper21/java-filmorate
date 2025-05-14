@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -34,10 +35,12 @@ public class Film {
         this.description = description;
         this.name = name;
         try {
-            Integer parseDuration = Integer.parseInt(duration);
+            long parseDuration = Long.parseLong(duration);
             this.duration = Duration.ofMinutes(parseDuration).toMinutes();
         } catch (NumberFormatException e) {
             this.duration = Duration.parse(duration).toMinutes();
+        }catch (Exception e){
+            throw  new ValidationException(e.getMessage());
         }
     }
 }
