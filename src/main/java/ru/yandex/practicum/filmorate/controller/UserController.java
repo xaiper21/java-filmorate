@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -20,6 +20,7 @@ public class UserController {
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
+        log.trace("Создание фильма");
         checkNameAndSet(user);
         user.setId(nextId());
         users.put(user.getId(), user);
@@ -28,8 +29,9 @@ public class UserController {
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
+        log.trace("Обновление фильма");
         if (user.getId() == null || !users.containsKey(user.getId()))
-            throw new ValidationException("User с указанным id не найден");
+            throw new NotFoundException("User с указанным id не найден");
         User oldUser = users.get(user.getId());
         checkNameAndSet(user);
         oldUser.setName(user.getName());
@@ -41,6 +43,7 @@ public class UserController {
 
     @GetMapping
     public Collection<User> findAll() {
+        log.trace("Получение фильмов");
         return users.values().stream().collect(Collectors.toList());
     }
 
