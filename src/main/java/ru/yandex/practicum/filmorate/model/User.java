@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Past;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -11,16 +11,15 @@ import java.time.LocalDate;
 
 @Data
 @EqualsAndHashCode(of = "id")
-public class Film {
+public class User {
     Long id;
+    @NotNull
+    @Email
+    String email;
     @NotBlank
+    String login;
     String name;
     @NotNull
-    @Size(max = 200)
-    String description;
-    @NotNull
-    LocalDate releaseDate;
-    @NotNull
-    @Positive
-    Long duration;
+    @Past
+    LocalDate birthday;
 }
