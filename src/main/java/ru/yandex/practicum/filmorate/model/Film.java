@@ -8,19 +8,23 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @EqualsAndHashCode(of = "id")
 public class Film {
-    Long id;
+    private Long id;
     @NotBlank
-    String name;
+    private String name;
     @NotNull
     @Size(max = 200)
-    String description;
+    private String description;
     @NotNull
-    LocalDate releaseDate;
+    private LocalDate releaseDate;
     @NotNull
     @Positive
-    Long duration;
+    private Long duration;
+
+    private Map<Long, Like> likes = new HashMap<>();
 }
