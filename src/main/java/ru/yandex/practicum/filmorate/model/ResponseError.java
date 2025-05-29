@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class ResponseError {
-    private final String exception;
+    private final String error;
 }

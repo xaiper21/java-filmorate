@@ -18,6 +18,7 @@ public class UserService {
     private final UserStorage userStorage = new InMemoryUserStorage();
 
     public User create(User user) {
+        log.trace("Сервисный метод добавление пользователя");
         checkNameAndSet(user);
         user.setId(userStorage.getNextId());
         userStorage.addUser(user);
@@ -25,16 +26,17 @@ public class UserService {
     }
 
     public User update(User user) {
+        log.trace("Сервисный метод обновления пользователя");
         if (user.getId() == null || !userStorage.containsKey(user.getId())) {
-            log.error("update user");
+            log.trace("Ошибка валидации");
             throw new NotFoundUserException("User с указанным id не найден");
         }
-
         checkNameAndSet(user);
         return userStorage.updateUser(user);
     }
 
     public Collection<User> findAll() {
+        log.trace("Сервисный метод получения всех");
         return userStorage.findAll();
     }
 
@@ -43,6 +45,7 @@ public class UserService {
     }
 
     public boolean addFriend(long id, long friendId) {
+        log.trace("Сервисный метод создания дружбы");
         if (!userStorage.containsKey(id) || !userStorage.containsKey(friendId))
             throw new NotFoundUserException("Пользователь не найден");
         friend(friendId, id);
@@ -50,6 +53,7 @@ public class UserService {
     }
 
     public boolean deleteFriend(long id, long friendId) {
+        log.trace("Сервисный метод удаления дружбы");
         if (!userStorage.containsKey(id) || !userStorage.containsKey(friendId))
             throw new NotFoundUserException("Пользователь не найден");
         removeFriend(id, friendId);
@@ -57,6 +61,7 @@ public class UserService {
     }
 
     public Collection<User> findAllFriends(long id) {
+        log.trace("Сервисный метод получение всех друзей пользователя");
         if (!userStorage.containsKey(id)) throw new NotFoundUserException("Пользователь не найден");
         User user = userStorage.get(id);
         return userStorage.findAll().stream()
@@ -65,11 +70,12 @@ public class UserService {
     }
 
     public Collection<User> findMutualFriends(long id, long otherId) {
+        log.trace("Сервисный метод поиска общих друзей пользователей");
         if (!userStorage.containsKey(id) || !userStorage.containsKey(otherId))
             throw new NotFoundUserException("Какой-то из друзей не найден");
         return userStorage.findAll().stream()
-                        .filter(user -> collisionFriends(id, otherId).contains(user.getId()))
-                                .collect(Collectors.toList());
+                .filter(user -> collisionFriends(id, otherId).contains(user.getId()))
+                .collect(Collectors.toList());
     }
 
     private void friend(long id, long friendId) {

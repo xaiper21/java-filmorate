@@ -36,21 +36,25 @@ public class UserController {
 
     @PutMapping("/users/{id}/friends/{friendId}")
     public boolean addFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.trace("Добавление в друзья");
         return userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/users/{id}/friends/{friendId}")
     public boolean deleteFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.trace("Удаление дружбы");
         return userService.deleteFriend(id, friendId);
     }
 
     @GetMapping("/users/{id}/friends")
     public Collection<User> findAllFriends(@PathVariable long id) {
+        log.trace("Получение списка друзей пользователя");
         return userService.findAllFriends(id);
     }
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
     public Collection<User> findMutualFriends(@PathVariable long id, @PathVariable long otherId) {
+        log.trace("Получение общих друзей");
         return userService.findMutualFriends(id, otherId);
     }
 }
