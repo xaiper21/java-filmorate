@@ -3,12 +3,15 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundUserException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.NullObject;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,12 +27,16 @@ public class UserService {
         return user;
     }
 
-    public User update(User user) {
+    public User update(User user) throws NullObject, NotFoundException {
         log.trace("Сервисный метод обновления пользователя");
+        if (user == null) {
+            log.trace("User = null");
+            throw new NullObject(User.class);
+        }
         Long userId = user.getId();
-        if (userId == null || !containsUser(userId)) {
+        if (!containsUser(userId)) {
             log.trace("Ошибка валидации");
-            throw new NotFoundUserException(userId);
+            throw new NotFoundException(User.class.getName(), userId);
         }
         checkNameAndSet(user);
         return userStorage.updateUser(user);
@@ -62,17 +69,19 @@ public class UserService {
         return userStorage.getCollectionUsersByCollectionIds(user.getFriends());
     }
 
-    private User getUserById(long id) throws NotFoundUserException {
+    private User getUserById(long id) throws NotFoundException {
         User user = userStorage.get(id);
-        if (user == null) throw new NotFoundUserException(id);
+        if (user == null) throw new NotFoundException(User.class.getName(), id);
         return user;
     }
 
     public Collection<User> findMutualFriends(long id, long otherId) {
         log.trace("Сервисный метод поиска общих друзей пользователей");
-        if (!userStorage.containsKey(id)) throw new NotFoundUserException(id);
-        if (!userStorage.containsKey(otherId)) throw new NotFoundUserException(otherId);
-        return userStorage.mutualFriends(id, otherId);
+        User user = getUserById(id);
+        User otherUser = getUserById(otherId);
+        Collection<Long> friends = collisionFriends(user.getFriends(), otherUser.getFriends());
+        if (friends.isEmpty()) return new ArrayList<>();
+        return userStorage.getCollectionUsersByCollectionIds(friends);
     }
 
     private void friend(User user1, User user2) {
@@ -87,5 +96,11 @@ public class UserService {
 
     boolean containsUser(long id) {
         return userStorage.containsKey(id);
+    }
+
+    private Collection<Long> collisionFriends(Collection<Long> friends1, Collection<Long> friends2) {
+        return friends1.stream()
+                .filter(friends2::contains)
+                .collect(Collectors.toList());
     }
 }

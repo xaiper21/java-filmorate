@@ -52,25 +52,11 @@ public class InMemoryUserStorage implements UserStorage {
         return ++currentMaxId;
     }
 
-    private Collection<Long> collisionFriends(Collection<Long> friends1, Collection<Long> friends2) {
-        return friends1.stream()
-                .filter(friends2::contains)
-                .collect(Collectors.toList());
-    }
-
     @Override
     public Collection<User> getCollectionUsersByCollectionIds(Collection<Long> ids) {
         return ids.stream()
                 .filter(users::containsKey)
                 .map(users::get)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public Collection<User> mutualFriends(long userId, long otherId) {
-        Collection<Long> userFriendIds = users.get(userId).getFriends();
-        Collection<Long> otherFriendIds = users.get(otherId).getFriends();
-        Collection<Long> mutualIds = collisionFriends(userFriendIds, otherFriendIds);
-        return getCollectionUsersByCollectionIds(mutualIds);
     }
 }

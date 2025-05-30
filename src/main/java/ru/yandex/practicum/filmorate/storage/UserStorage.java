@@ -18,7 +18,5 @@ public interface UserStorage {
 
     long getNextId();
 
-    Collection<User> mutualFriends(long userId, long otherId);
-
     Collection<User> getCollectionUsersByCollectionIds(Collection<Long> ids);
 }

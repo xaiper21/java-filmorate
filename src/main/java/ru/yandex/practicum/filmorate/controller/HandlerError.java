@@ -8,54 +8,34 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.yandex.practicum.filmorate.exception.DateNotValidException;
-import ru.yandex.practicum.filmorate.exception.NotFoundFilmException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.NotFoundLikeException;
-import ru.yandex.practicum.filmorate.exception.NotFoundUserException;
-import ru.yandex.practicum.filmorate.model.ResponseError;
+import ru.yandex.practicum.filmorate.exception.NullObject;
+import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
 @Slf4j
 @ResponseBody
 @ControllerAdvice
 public class HandlerError {
 
-    @ExceptionHandler(NotFoundUserException.class)
+    @ExceptionHandler({NotFoundException.class, NotFoundLikeException.class, NullObject.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseError checkNotFoundUser(NotFoundUserException e) {
-        log.trace("Обработка NotFoundUserException");
-        return new ResponseError(e.getMessage());
+    public ErrorResponse checkNotFound(Exception e) {
+        log.trace("Обработка NotFoundException");
+        return new ErrorResponse(e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseError checkAll(MethodArgumentNotValidException e) {
+    @ExceptionHandler({MethodArgumentNotValidException.class, DateNotValidException.class})
+    public ErrorResponse checkValidError(Exception e) {
         log.trace("Обработка ошибки валидации");
-        return new ResponseError("Ошибка валидации данных");
-    }
-
-    @ExceptionHandler(NotFoundFilmException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseError checkNotFoundFilmException(NotFoundFilmException e) {
-        log.trace("Обработка NotFoundFilmException");
-        return new ResponseError(e.getMessage());
-    }
-
-    @ExceptionHandler(DateNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseError checkDateNotValidException(DateNotValidException e) {
-        log.trace("Обработка DateNotValidException");
-        return new ResponseError(e.getMessage());
-    }
-
-    @ExceptionHandler(NotFoundLikeException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseError checkNotFoundLikeException(NotFoundLikeException e) {
-        return new ResponseError(e.getMessage());
+        return new ErrorResponse("Ошибка валидации данных");
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseError checkAllException(Exception e) {
+    public ErrorResponse checkAllException(Exception e) {
         log.error(e.getMessage(), e);
-        return new ResponseError("Возникла какая-то ошибка");
+        return new ErrorResponse("Возникла какая-то ошибка");
     }
 }
