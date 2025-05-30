@@ -7,8 +7,6 @@ import java.util.Collection;
 public interface FilmStorage {
     void addFilm(Film film);
 
-//    void removeFilm(long id);
-
     Film updateFilm(Film newFilm);
 
     boolean containsKey(long id);
@@ -18,4 +16,6 @@ public interface FilmStorage {
     Collection<Film> findAll();
 
     long getNextId();
+
+    Collection<Film> getTopFilms(int count);
 }

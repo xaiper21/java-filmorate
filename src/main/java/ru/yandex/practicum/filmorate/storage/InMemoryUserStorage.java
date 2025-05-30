@@ -17,11 +17,6 @@ public class InMemoryUserStorage implements UserStorage {
         users.put(user.getId(), user);
     }
 
-//    @Override
-//    public void removeUser(long id) {
-//        users.remove(id);
-//    }
-
     @Override
     public User updateUser(User newUser) {
         User oldUser = users.get(newUser.getId());
@@ -55,5 +50,27 @@ public class InMemoryUserStorage implements UserStorage {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
+    }
+
+    private Collection<Long> collisionFriends(Collection<Long> friends1, Collection<Long> friends2) {
+        return friends1.stream()
+                .filter(friends2::contains)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<User> getCollectionUsersByCollectionIds(Collection<Long> ids) {
+        return ids.stream()
+                .filter(users::containsKey)
+                .map(users::get)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<User> mutualFriends(long userId, long otherId) {
+        Collection<Long> userFriendIds = users.get(userId).getFriends();
+        Collection<Long> otherFriendIds = users.get(otherId).getFriends();
+        Collection<Long> mutualIds = collisionFriends(userFriendIds, otherFriendIds);
+        return getCollectionUsersByCollectionIds(mutualIds);
     }
 }

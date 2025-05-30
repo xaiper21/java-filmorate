@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmMaxLikesComparator;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,11 +18,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void addFilm(Film film) {
         films.put(film.getId(), film);
     }
-
-//    @Override
-//    public void removeFilm(long id) {
-//        films.remove(id);
-//    }
 
     @Override
     public Film updateFilm(Film film) {
@@ -56,5 +52,13 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
+    }
+
+    @Override
+    public Collection<Film> getTopFilms(int count) {
+        return films.values().stream()
+                .sorted(new FilmMaxLikesComparator())
+                .limit(count)
+                .collect(Collectors.toList());
     }
 }

@@ -8,8 +8,6 @@ public interface UserStorage {
 
     void addUser(User user);
 
-//    void removeUser(long id);
-
     User updateUser(User newUser);
 
     boolean containsKey(long id);
@@ -19,4 +17,8 @@ public interface UserStorage {
     Collection<User> findAll();
 
     long getNextId();
+
+    Collection<User> mutualFriends(long userId, long otherId);
+
+    Collection<User> getCollectionUsersByCollectionIds(Collection<Long> ids);
 }

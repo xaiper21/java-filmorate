@@ -7,8 +7,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import ru.yandex.practicum.filmorate.exception.DataFilmException;
 import ru.yandex.practicum.filmorate.exception.DateNotValidException;
+import ru.yandex.practicum.filmorate.exception.NotFoundFilmException;
+import ru.yandex.practicum.filmorate.exception.NotFoundLikeException;
 import ru.yandex.practicum.filmorate.exception.NotFoundUserException;
 import ru.yandex.practicum.filmorate.model.ResponseError;
 
@@ -31,16 +32,23 @@ public class HandlerError {
         return new ResponseError("Ошибка валидации данных");
     }
 
-    @ExceptionHandler(DataFilmException.class)
+    @ExceptionHandler(NotFoundFilmException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseError checkNoDataFilmException(DataFilmException e) {
-        log.trace("Обработка DataFilmException");
+    public ResponseError checkNotFoundFilmException(NotFoundFilmException e) {
+        log.trace("Обработка NotFoundFilmException");
         return new ResponseError(e.getMessage());
     }
 
     @ExceptionHandler(DateNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseError checkDateNotValidException(DateNotValidException e) {
+        log.trace("Обработка DateNotValidException");
+        return new ResponseError(e.getMessage());
+    }
+
+    @ExceptionHandler(NotFoundLikeException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseError checkNotFoundLikeException(NotFoundLikeException e) {
         return new ResponseError(e.getMessage());
     }
 

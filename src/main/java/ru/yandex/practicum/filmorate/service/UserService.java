@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -27,9 +26,10 @@ public class UserService {
 
     public User update(User user) {
         log.trace("Сервисный метод обновления пользователя");
-        if (user.getId() == null || !userStorage.containsKey(user.getId())) {
+        Long userId = user.getId();
+        if (userId == null || !containsUser(userId)) {
             log.trace("Ошибка валидации");
-            throw new NotFoundUserException("User с указанным id не найден");
+            throw new NotFoundUserException(userId);
         }
         checkNameAndSet(user);
         return userStorage.updateUser(user);
@@ -46,52 +46,43 @@ public class UserService {
 
     public boolean addFriend(long id, long friendId) {
         log.trace("Сервисный метод создания дружбы");
-        if (!userStorage.containsKey(id) || !userStorage.containsKey(friendId))
-            throw new NotFoundUserException("Пользователь не найден");
-        friend(friendId, id);
+        friend(getUserById(id), getUserById(friendId));
         return true;
     }
 
     public boolean deleteFriend(long id, long friendId) {
         log.trace("Сервисный метод удаления дружбы");
-        if (!userStorage.containsKey(id) || !userStorage.containsKey(friendId))
-            throw new NotFoundUserException("Пользователь не найден");
-        removeFriend(id, friendId);
+        removeFriend(getUserById(id), getUserById(friendId));
         return true;
     }
 
     public Collection<User> findAllFriends(long id) {
         log.trace("Сервисный метод получение всех друзей пользователя");
-        if (!userStorage.containsKey(id)) throw new NotFoundUserException("Пользователь не найден");
+        User user = getUserById(id);
+        return userStorage.getCollectionUsersByCollectionIds(user.getFriends());
+    }
+
+    private User getUserById(long id) throws NotFoundUserException {
         User user = userStorage.get(id);
-        return userStorage.findAll().stream()
-                .filter(friend -> user.getFriends().contains(friend.getId()))
-                .collect(Collectors.toList());
+        if (user == null) throw new NotFoundUserException(id);
+        return user;
     }
 
     public Collection<User> findMutualFriends(long id, long otherId) {
         log.trace("Сервисный метод поиска общих друзей пользователей");
-        if (!userStorage.containsKey(id) || !userStorage.containsKey(otherId))
-            throw new NotFoundUserException("Какой-то из друзей не найден");
-        return userStorage.findAll().stream()
-                .filter(user -> collisionFriends(id, otherId).contains(user.getId()))
-                .collect(Collectors.toList());
+        if (!userStorage.containsKey(id)) throw new NotFoundUserException(id);
+        if (!userStorage.containsKey(otherId)) throw new NotFoundUserException(otherId);
+        return userStorage.mutualFriends(id, otherId);
     }
 
-    private void friend(long id, long friendId) {
-        userStorage.get(id).getFriends().add(friendId);
-        userStorage.get(friendId).getFriends().add(id);
+    private void friend(User user1, User user2) {
+        user1.getFriends().add(user2.getId());
+        user2.getFriends().add(user1.getId());
     }
 
-    private void removeFriend(long id, long friendId) {
-        userStorage.get(id).getFriends().remove(friendId);
-        userStorage.get(friendId).getFriends().remove(id);
-    }
-
-    private Collection<Long> collisionFriends(long user1, long user2) {
-        return userStorage.get(user1).getFriends().stream()
-                .filter(user -> userStorage.get(user2).getFriends().contains(user))
-                .collect(Collectors.toList());
+    private void removeFriend(User user1, User user2) {
+        user1.getFriends().remove(user2.getId());
+        user2.getFriends().remove(user1.getId());
     }
 
     boolean containsUser(long id) {
