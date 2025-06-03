@@ -1,17 +1,21 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
+import ru.yandex.practicum.filmorate.annotation.OneOf;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@Data
+@AllArgsConstructor
+@Getter
+@Setter
 @EqualsAndHashCode(of = "id")
 public class Film {
     private Long id;
@@ -25,6 +29,11 @@ public class Film {
     @NotNull
     @Positive
     private Long duration;
+    @OneOf(isRegisterUp = true)
+    @JsonProperty("rating")
+    private String rating;
+//    @NotNull
+    private Collection<Genre> genres;
 
     private Map<Long, Like> likes = new HashMap<>();
 }

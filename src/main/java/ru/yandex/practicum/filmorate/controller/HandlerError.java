@@ -29,6 +29,7 @@ public class HandlerError {
     @ExceptionHandler({MethodArgumentNotValidException.class, DateNotValidException.class})
     public ErrorResponse checkValidError(Exception e) {
         log.trace("Обработка ошибки валидации");
+        log.error(e.getLocalizedMessage());
         return new ErrorResponse("Ошибка валидации данных");
     }
 
