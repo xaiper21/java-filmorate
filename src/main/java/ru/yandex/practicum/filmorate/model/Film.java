@@ -30,7 +30,6 @@ public class Film {
     @Positive
     private Long duration;
     @OneOf(isRegisterUp = true)
-    @JsonProperty("rating")
     private String rating;
 //    @NotNull
     private Collection<Genre> genres;
