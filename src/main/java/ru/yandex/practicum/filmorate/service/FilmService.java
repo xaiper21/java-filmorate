@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.DateNotValidException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.NotFoundLikeException;
 import ru.yandex.practicum.filmorate.exception.NullObject;
@@ -13,7 +12,6 @@ import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import java.time.LocalDate;
 import java.util.Collection;
 
 @Slf4j
@@ -26,10 +24,8 @@ public class FilmService {
 
     public Film create(Film film) {
         log.trace("Сервисный метод добавление фильма");
-        if (valid(film)) {
-            film.setId(filmStorage.getNextId());
-            filmStorage.addFilm(film);
-        }
+        film.setId(filmStorage.getNextId());
+        filmStorage.addFilm(film);
         return film;
     }
 
@@ -38,22 +34,13 @@ public class FilmService {
         if (film == null) throw new NullObject(Film.class);
         Long filmId = film.getId();
         if (!filmStorage.containsKey(filmId)) throw new NotFoundException(Film.class.getName(), filmId);
-        if (valid(film)) {
-            filmStorage.updateFilm(film);
-        }
+        filmStorage.updateFilm(film);
         return film;
     }
 
     public Collection<Film> findAll() {
         log.trace("Сервисный метод получение фильмов");
         return filmStorage.findAll();
-    }
-
-    private boolean valid(Film film) throws DateNotValidException {
-        LocalDate startFilmDate = LocalDate.of(1895, 12, 28);
-        if (film.getReleaseDate().isBefore(startFilmDate))
-            throw new DateNotValidException("Дата релиза — не раньше 28.12.1895");
-        return true;
     }
 
     public Like likeFilm(long filmId, long userId) throws NotFoundException {

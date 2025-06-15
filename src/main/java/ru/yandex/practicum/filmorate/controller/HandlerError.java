@@ -28,8 +28,8 @@ public class HandlerError {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({MethodArgumentNotValidException.class, DateNotValidException.class})
     public ErrorResponse checkValidError(Exception e) {
-        log.trace("Обработка ошибки валидации");
-        return new ErrorResponse("Ошибка валидации данных");
+        log.trace("Обработка ошибки валидации {}", e.getMessage());
+        return new ErrorResponse("Ошибка валидации данных " + e.getMessage());
     }
 
     @ExceptionHandler
