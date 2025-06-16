@@ -13,7 +13,12 @@
         description VARCHAR(200) NOT NULL,
         release_date DATE,
         duration INT,
-        rating VARCHAR(10)
+        rating_id INT
+    );
+
+    CREATE TABLE If NOT EXISTS rating(
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(10)
     );
 
    CREATE TABLE IF NOT EXISTS film_genre(
@@ -37,18 +42,14 @@
         FOREIGN KEY (film_id) REFERENCES film(film_id) ON DELETE CASCADE
    );
 
-   CREATE TYPE friendship_status AS ENUM ('pending', 'accepted', 'blocked');
 
-   CREATE TABLE friendships (
+   CREATE TABLE friendship (
        user_one_id BIGINT NOT NULL,
        user_two_id BIGINT NOT NULL,
-       status friendship_status NOT NULL,
-       action_user_id BIGINT NOT NULL,
        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
        PRIMARY KEY (user_one_id, user_two_id),
 
-       CONSTRAINT check_user_order CHECK (user_one_id < user_two_id),
+       CONSTRAINT check_user_order CHECK (user_one_id != user_two_id),
 
        CONSTRAINT fk_friendships_user_one
        FOREIGN KEY (user_one_id) REFERENCES user(id) ON DELETE CASCADE,
