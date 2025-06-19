@@ -1,16 +1,14 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import ru.yandex.practicum.filmorate.exception.DateNotValidException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.NotFoundLikeException;
-import ru.yandex.practicum.filmorate.exception.NullObject;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
 @Slf4j
@@ -18,7 +16,8 @@ import ru.yandex.practicum.filmorate.model.ErrorResponse;
 @ControllerAdvice
 public class HandlerError {
 
-    @ExceptionHandler({NotFoundException.class, NotFoundLikeException.class, NullObject.class})
+    @ExceptionHandler({NotFoundException.class, NotFoundLikeException.class, NullObject.class,
+            InternalServerException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse checkNotFound(Exception e) {
         log.trace("Обработка NotFoundException");

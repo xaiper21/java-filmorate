@@ -2,8 +2,10 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.dtoclasses.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -17,19 +19,19 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/users")
-    public User create(@Valid @RequestBody User user) {
+    public UserDto create(@Valid @NonNull @RequestBody UserDto user) {
         log.trace("Контроллер создания пользователя");
         return userService.create(user);
     }
 
     @PutMapping("/users")
-    public User update(@Valid @RequestBody User user) {
+    public UserDto update(@Valid @NonNull @RequestBody UserDto user) {
         log.trace("Контроллер обновление пользователя");
         return userService.update(user);
     }
 
     @GetMapping("/users")
-    public Collection<User> findAll() {
+    public Collection<UserDto> findAll() {
         log.trace("Контроллер получения пользователей");
         return userService.findAll();
     }
@@ -47,13 +49,13 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}/friends")
-    public Collection<User> findAllFriends(@PathVariable long id) {
+    public Collection<UserDto> findAllFriends(@PathVariable long id) {
         log.trace("Получение списка друзей пользователя");
         return userService.findAllFriends(id);
     }
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
-    public Collection<User> findMutualFriends(@PathVariable long id, @PathVariable long otherId) {
+    public Collection<UserDto> findMutualFriends(@PathVariable long id, @PathVariable long otherId) {
         log.trace("Получение общих друзей");
         return userService.findMutualFriends(id, otherId);
     }

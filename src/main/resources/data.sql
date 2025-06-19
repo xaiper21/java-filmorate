@@ -1,0 +1,16 @@
+DELETE FROM RATING;
+DELETE FROM FILM_GENRE;
+DELETE FROM FILM_LIKE;
+DELETE FROM GENRE;
+DELETE FROM USERS;
+DELETE FROM FILM;
+
+
+
+
+INSERT INTO rating (name)
+VALUES ('G'),
+       ( 'PG'),
+       ( 'PG-13'),
+       ('R'),
+       ('NC');
