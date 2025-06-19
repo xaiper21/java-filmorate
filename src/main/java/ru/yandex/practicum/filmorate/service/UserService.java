@@ -1,50 +1,49 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.UserRepository;
+import ru.yandex.practicum.filmorate.dto.dtoclasses.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.NullObject;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @Scope("singleton")
+@AllArgsConstructor
 public class UserService {
-    private final UserStorage userStorage = new InMemoryUserStorage();
+    private final UserRepository userRepository;
 
-    public User create(User user) {
+    public UserDto create(UserDto userDto) {
         log.trace("Сервисный метод добавление пользователя");
+        User user = UserMapper.mapToUser(userDto);
         checkNameAndSet(user);
-        user.setId(userStorage.getNextId());
-        userStorage.addUser(user);
-        return user;
+        user = userRepository.save(user);
+        return UserMapper.mapToUserDto(user);
     }
 
-    public User update(User user) throws NullObject, NotFoundException {
+    public UserDto update(UserDto userDto) throws NullObject, NotFoundException {
         log.trace("Сервисный метод обновления пользователя");
-        if (user == null) {
-            log.trace("User = null");
-            throw new NullObject(User.class);
-        }
-        Long userId = user.getId();
-        if (!containsUser(userId)) {
-            log.trace("Ошибка валидации");
-            throw new NotFoundException(User.class.getName(), userId);
-        }
-        checkNameAndSet(user);
-        return userStorage.updateUser(user);
+        User user = UserMapper.mapToUser(userDto);
+        user = userRepository.update(user);
+        return UserMapper.mapToUserDto(user);
     }
 
-    public Collection<User> findAll() {
-        log.trace("Сервисный метод получения всех");
-        return userStorage.findAll();
+    public Collection<UserDto> findAll() {
+        log.trace("Сервисный метод получения всех пользователей");
+        return userRepository.findMany()
+                .stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
     private void checkNameAndSet(User user) {
@@ -53,52 +52,64 @@ public class UserService {
 
     public boolean addFriend(long id, long friendId) {
         log.trace("Сервисный метод создания дружбы");
-        friend(getUserById(id), getUserById(friendId));
+        containsUser(id);
+        containsUser(friendId);
+        userRepository.addFriend(id, friendId);
         return true;
     }
 
     public boolean deleteFriend(long id, long friendId) {
         log.trace("Сервисный метод удаления дружбы");
-        removeFriend(getUserById(id), getUserById(friendId));
+        containsUser(id);
+        containsUser(friendId);
+        userRepository.deleteFriend(id, friendId);
         return true;
     }
 
-    public Collection<User> findAllFriends(long id) {
+    public Collection<UserDto> findAllFriends(long id) {
         log.trace("Сервисный метод получение всех друзей пользователя");
-        User user = getUserById(id);
-        return userStorage.getCollectionUsersByCollectionIds(user.getFriends());
+        containsUser(id);
+        return userRepository.findManyFriendsByIdUser(id)
+                .stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
-    private User getUserById(long id) throws NotFoundException {
-        User user = userStorage.get(id);
-        if (user == null) throw new NotFoundException(User.class.getName(), id);
-        return user;
-    }
-
-    public Collection<User> findMutualFriends(long id, long otherId) {
+    //
+//    private User getUserById(long id) throws NotFoundException {
+//        Optional<User> user = userRepository.findOne(id);
+//        if (user.isEmpty()) throw new NotFoundException(User.class.getName(), id);
+//        return user.get();
+//    }
+//
+    public Collection<UserDto> findMutualFriends(long id, long otherId) {
         log.trace("Сервисный метод поиска общих друзей пользователей");
-        User user = getUserById(id);
-        User otherUser = getUserById(otherId);
-        Collection<Long> friends = collisionFriends(user.getFriends(), otherUser.getFriends());
+        containsUser(id);
+        containsUser(otherId);
+        Collection<User> friendsOneUser = userRepository.findManyFriendsByIdUser(id);
+        Collection<User> friendsTwoUser = userRepository.findManyFriendsByIdUser(otherId);
+        Collection<User> friends = collisionFriends(friendsOneUser, friendsTwoUser);
         if (friends.isEmpty()) return new ArrayList<>();
-        return userStorage.getCollectionUsersByCollectionIds(friends);
+        return friends.stream().map(UserMapper::mapToUserDto).collect(Collectors.toList());
     }
 
-    private void friend(User user1, User user2) {
-        user1.getFriends().add(user2.getId());
-        user2.getFriends().add(user1.getId());
+    //
+//    private void friend(User user1, User user2) {
+//        user1.getFriends().add(user2.getId());
+//        user2.getFriends().add(user1.getId());
+//    }
+//
+//    private void removeFriend(User user1, User user2) {
+//        user1.getFriends().remove(user2.getId());
+//        user2.getFriends().remove(user1.getId());
+//    }
+//
+    void containsUser(long id) {
+        Optional<User> user = userRepository.findOne(id);
+        if (user.isEmpty()) throw new NotFoundException(User.class.getSimpleName(), id);
     }
-
-    private void removeFriend(User user1, User user2) {
-        user1.getFriends().remove(user2.getId());
-        user2.getFriends().remove(user1.getId());
-    }
-
-    boolean containsUser(long id) {
-        return userStorage.containsKey(id);
-    }
-
-    private Collection<Long> collisionFriends(Collection<Long> friends1, Collection<Long> friends2) {
+//
+    private Collection<User> collisionFriends(Collection<User> friends1, Collection<User> friends2) {
         return friends1.stream()
                 .filter(friends2::contains)
                 .collect(Collectors.toList());

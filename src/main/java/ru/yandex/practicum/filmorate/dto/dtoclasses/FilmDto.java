@@ -1,23 +1,18 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto.dtoclasses;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import ru.yandex.practicum.filmorate.annotation.DateNoEarlierThan;
 import ru.yandex.practicum.filmorate.annotation.OneOf;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Data
-@EqualsAndHashCode(of = "id")
-public class Film {
+public class FilmDto {
     private Long id;
     @NotBlank
     private String name;
@@ -30,7 +25,6 @@ public class Film {
     @Positive
     private Long duration;
     @OneOf(values = {"G", "PG", "PG-13", "R", "NC"})
-    private int rating;
-
-    private Map<Long, Like> likes = new HashMap<>();
+    private String rating;
+    private List<String> genres;
 }
