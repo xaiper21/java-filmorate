@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS film (
 );
 
 CREATE TABLE IF NOT EXISTS genre (
-             id INT PRIMARY KEY AUTO_INCREMENT,
+             id INT PRIMARY KEY ,
              name VARCHAR(40) UNIQUE NOT NULL
 );
 

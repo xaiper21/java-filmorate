@@ -9,7 +9,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class NewUserDto {
+public class CreateUserDto {
     Long id;
     @NotNull
     @Email

@@ -1,13 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
@@ -25,7 +25,8 @@ public class HandlerError {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({MethodArgumentNotValidException.class, DateNotValidException.class})
+    @ExceptionHandler({MethodArgumentNotValidException.class, DateNotValidException.class,
+            HandlerMethodValidationException.class})
     public ErrorResponse checkValidError(Exception e) {
         log.trace("Обработка ошибки валидации {}", e.getMessage());
         return new ErrorResponse("Ошибка валидации данных " + e.getMessage());

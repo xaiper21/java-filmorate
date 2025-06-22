@@ -1,16 +1,17 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto.dtoclasses;
 
 import lombok.Data;
+
 import java.time.LocalDate;
 import java.util.List;
 
 @Data
-public class Film {
+public class FilmResponseDto {
     private Long id;
     private String name;
     private String description;
     private LocalDate releaseDate;
     private Integer duration;
-    private MpaWithId mpa;
-    private List<GenreWithId> genres;
+    private MpaWithIdAndName mpa;
+    private List<GenreWithIdAndName> genres;
 }

@@ -1,16 +1,15 @@
-DELETE FROM RATING;
-DELETE FROM FILM_GENRE;
-DELETE FROM FILM_LIKE;
-DELETE FROM GENRE;
-DELETE FROM USERS;
-DELETE FROM FILM;
-
-
-
 
 INSERT INTO rating (name)
 VALUES ('G'),
        ( 'PG'),
        ( 'PG-13'),
        ('R'),
-       ('NC');
+       ('NC-17');
+
+INSERT INTO genre (ID, NAME)
+VALUES (1,'Комедия'),
+       (2,'Драма'),
+       (3,'Мультфильм'),
+       (4,'Триллер'),
+       (5,'Документальный'),
+       (6,'Боевик');

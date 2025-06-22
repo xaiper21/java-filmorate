@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.mapper;
 
 import lombok.NoArgsConstructor;
-import ru.yandex.practicum.filmorate.dto.create.NewUserDto;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
 

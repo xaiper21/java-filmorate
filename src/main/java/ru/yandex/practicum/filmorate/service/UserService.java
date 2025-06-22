@@ -75,13 +75,6 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    //
-//    private User getUserById(long id) throws NotFoundException {
-//        Optional<User> user = userRepository.findOne(id);
-//        if (user.isEmpty()) throw new NotFoundException(User.class.getName(), id);
-//        return user.get();
-//    }
-//
     public Collection<UserDto> findMutualFriends(long id, long otherId) {
         log.trace("Сервисный метод поиска общих друзей пользователей");
         containsUser(id);
@@ -93,22 +86,11 @@ public class UserService {
         return friends.stream().map(UserMapper::mapToUserDto).collect(Collectors.toList());
     }
 
-    //
-//    private void friend(User user1, User user2) {
-//        user1.getFriends().add(user2.getId());
-//        user2.getFriends().add(user1.getId());
-//    }
-//
-//    private void removeFriend(User user1, User user2) {
-//        user1.getFriends().remove(user2.getId());
-//        user2.getFriends().remove(user1.getId());
-//    }
-//
     void containsUser(long id) {
         Optional<User> user = userRepository.findOne(id);
         if (user.isEmpty()) throw new NotFoundException(User.class.getSimpleName(), id);
     }
-//
+
     private Collection<User> collisionFriends(Collection<User> friends1, Collection<User> friends2) {
         return friends1.stream()
                 .filter(friends2::contains)

@@ -6,13 +6,14 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.annotation.DateNoEarlierThan;
-import ru.yandex.practicum.filmorate.annotation.OneOf;
+import ru.yandex.practicum.filmorate.model.GenreWithId;
+import ru.yandex.practicum.filmorate.model.MpaWithId;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Data
-public class UpdateFilmRequest {
+public class FilmUpdateDto {
     private Long id;
     @NotBlank
     private String name;
@@ -23,8 +24,15 @@ public class UpdateFilmRequest {
     private LocalDate releaseDate;
     @NotNull
     @Positive
-    private Long duration;
-    @OneOf(values = {"G", "PG", "PG-13", "R", "NC"})
-    private String rating;
-    private List<String> genres;
+    private Integer duration;
+    private MpaWithId mpa;
+    private List<GenreWithId> genres;
+
+    public boolean hasMpa(){
+        return ! (mpa == null || mpa.getId() == null);
+    }
+
+    public boolean hasGenres(){
+        return ! (genres == null || genres.isEmpty());
+    }
 }

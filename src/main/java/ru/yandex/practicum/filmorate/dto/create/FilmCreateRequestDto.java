@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.dto.dtoclasses;
+package ru.yandex.practicum.filmorate.dto.create;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -6,14 +6,14 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.annotation.DateNoEarlierThan;
-import ru.yandex.practicum.filmorate.annotation.OneOf;
+import ru.yandex.practicum.filmorate.model.GenreWithId;
+import ru.yandex.practicum.filmorate.model.MpaWithId;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Data
-public class FilmDto {
-    private Long id;
+public class FilmCreateRequestDto {
     @NotBlank
     private String name;
     @NotNull
@@ -23,8 +23,7 @@ public class FilmDto {
     private LocalDate releaseDate;
     @NotNull
     @Positive
-    private Long duration;
-    @OneOf(values = {"G", "PG", "PG-13", "R", "NC"})
-    private String rating;
-    private List<String> genres;
+    private Integer duration;
+    private MpaWithId mpa;
+    private List<GenreWithId> genres;
 }

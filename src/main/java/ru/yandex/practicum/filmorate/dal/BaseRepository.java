@@ -57,4 +57,8 @@ public class BaseRepository<T> {
             throw new InternalServerException("Не удалось сохранить данные");
         }
     }
+
+    protected void insertOrUpdate(String query, Object... params) throws InternalServerException {
+
+    }
 }
