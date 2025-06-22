@@ -1,19 +1,14 @@
-DELETE FROM rating where id = 0;
-DELETE FROM genre where id = 0;
+
+MERGE INTO rating (ID, NAME) KEY(ID) VALUES (1, 'G');
+MERGE INTO rating (ID, NAME) KEY(ID) VALUES (2, 'PG');
+MERGE INTO rating (ID, NAME) KEY(ID) VALUES (3, 'PG-13');
+MERGE INTO rating (ID, NAME) KEY(ID) VALUES (4, 'R');
+MERGE INTO rating (ID, NAME) KEY(ID) VALUES (5, 'NC-17');
 
 
-
-INSERT INTO rating (name)
-VALUES ('G'),
-       ( 'PG'),
-       ( 'PG-13'),
-       ('R'),
-       ('NC-17');
-
-INSERT INTO genre (ID, NAME)
-VALUES (1,'Комедия'),
-       (2,'Драма'),
-       (3,'Мультфильм'),
-       (4,'Триллер'),
-       (5,'Документальный'),
-       (6,'Боевик');
+MERGE INTO genre (ID, NAME) KEY(ID) VALUES (1, 'Комедия');
+MERGE INTO genre (ID, NAME) KEY(ID) VALUES (2, 'Драма');
+MERGE INTO genre (ID, NAME) KEY(ID) VALUES (3, 'Мультфильм');
+MERGE INTO genre (ID, NAME) KEY(ID) VALUES (4, 'Триллер');
+MERGE INTO genre (ID, NAME) KEY(ID) VALUES (5, 'Документальный');
+MERGE INTO genre (ID, NAME) KEY(ID) VALUES (6, 'Боевик');
