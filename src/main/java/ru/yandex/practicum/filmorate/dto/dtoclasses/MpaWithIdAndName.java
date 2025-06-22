@@ -8,6 +8,7 @@ public class MpaWithIdAndName extends GenreWithId {
     @Getter
     @Setter
     String name;
+    
     public MpaWithIdAndName() {
         super();
     }
