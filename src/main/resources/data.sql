@@ -1,3 +1,7 @@
+DELETE FROM rating where id = 0;
+DELETE FROM genre where id = 0;
+
+
 
 INSERT INTO rating (name)
 VALUES ('G'),
