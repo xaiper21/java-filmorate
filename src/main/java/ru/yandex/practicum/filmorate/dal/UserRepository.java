@@ -70,7 +70,7 @@ public class UserRepository extends BaseRepository<User> {
         super.insert(INSERT_FRIEND_QUERY, id, friendId);
     }
 
-    public void deleteFriend(long user_one_id, long user_two_id) {
-        super.delete(DELETE_FRIEND_BY_USER_ONE_ID_QUERY, user_one_id, user_two_id);
+    public void deleteFriend(long userOneId, long userTwoId) {
+        super.delete(DELETE_FRIEND_BY_USER_ONE_ID_QUERY, userOneId, userTwoId);
     }
 }
