@@ -28,11 +28,11 @@ public class FilmUpdateDto {
     private MpaWithId mpa;
     private List<GenreWithId> genres;
 
-    public boolean hasMpa(){
-        return ! (mpa == null || mpa.getId() == null);
+    public boolean hasMpa() {
+        return !(mpa == null || mpa.getId() == null);
     }
 
-    public boolean hasGenres(){
-        return ! (genres == null || genres.isEmpty());
+    public boolean hasGenres() {
+        return !(genres == null || genres.isEmpty());
     }
 }
