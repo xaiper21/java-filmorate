@@ -13,12 +13,18 @@ import java.util.Optional;
 
 @Repository
 public class FilmRepository extends BaseRepository<Film> {
-    private static final String INSERT_QUERY = "INSERT INTO film (name, description, release_date, duration, rating_id)" +
+    private static final String INSERT_QUERY = "INSERT INTO film (name, description, release_date, duration," +
+            " rating_id)" +
             "VALUES (?, ?, ?, ?, ?)";
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM film WHERE id = ?";
+    private static final String FIND_BY_ID_QUERY = "SELECT film.id, film.name, film.description, film.release_date," +
+            " film.duration, film.rating_id, r.name AS rating_name FROM film " +
+            " LEFT JOIN rating r ON film.rating_id = r.id " +
+            "WHERE film.id = ?";
     private static final String UPDATE_FILM_QUERY = "UPDATE film SET name=?, description=?, release_date=?, duration=?, " +
-            "rating_id=? WHERE id=?";
-    private static final String INSERT_ALL_QUERY = "SELECT * FROM film";
+            "rating_id=? WHERE film.id=?";
+    private static final String FIND_ALL_QUERY = "SELECT film.id, film.name, film.description, film.release_date," +
+            " film.duration, rating_id, r.name AS rating_name FROM film " +
+            " LEFT JOIN rating r ON film.rating_id = r.id ";
     private static final String INSERT_LIKE_QUERY = "INSERT INTO film_like (user_id, film_id) VALUES (?, ?)";
     private static final String REMOVE_LIKE_QUERY = "DELETE FROM film_like WHERE user_id = ? AND film_id = ?";
     private static final String FIND_POPULAR_FILM_QUERY = "SELECT " +
@@ -28,8 +34,10 @@ public class FilmRepository extends BaseRepository<Film> {
             "    f.RELEASE_DATE, " +
             "    f.DURATION, " +
             "    f.RATING_ID, " +
+            "    r.name AS rating_name " +
             "FROM " +
             "    FILM AS f " +
+            "LEFT JOIN rating AS r ON f.rating_id = r.id " +
             "LEFT JOIN " +
             "    (SELECT film_id, COUNT(film_id) AS like_count FROM film_like GROUP BY film_id) AS likes " +
             "    ON f.ID = likes.film_id " +
@@ -43,8 +51,10 @@ public class FilmRepository extends BaseRepository<Film> {
             "    f.RELEASE_DATE, " +
             "    f.DURATION, " +
             "    f.RATING_ID " +
+            "    r.name AS rating_name " +
             "FROM " +
             "    FILM AS f " +
+            "    LEFT JOIN rating AS r ON f.rating_id = r.id " +
             "    LEFT JOIN FILM_GENRE AS FG ON f.ID = FG.FILM_ID " +
             "WHERE FG.GENRE_ID = ?";
 
@@ -77,7 +87,7 @@ public class FilmRepository extends BaseRepository<Film> {
     }
 
     public List<Film> findAll() {
-        return super.findMany(INSERT_ALL_QUERY);
+        return super.findMany(FIND_ALL_QUERY);
     }
 
     public void setInsertLikeQuery(Long userId, Long filmId) {

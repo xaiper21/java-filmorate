@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.exception.NullObject;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -79,21 +78,14 @@ public class UserService {
         log.trace("Сервисный метод поиска общих друзей пользователей");
         containsUser(id);
         containsUser(otherId);
-        Collection<User> friendsOneUser = userRepository.findManyFriendsByIdUser(id);
-        Collection<User> friendsTwoUser = userRepository.findManyFriendsByIdUser(otherId);
-        Collection<User> friends = collisionFriends(friendsOneUser, friendsTwoUser);
-        if (friends.isEmpty()) return new ArrayList<>();
-        return friends.stream().map(UserMapper::mapToUserDto).collect(Collectors.toList());
+        return userRepository.findAllMutualFriendsByIdUsers(id, otherId)
+                .stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
     void containsUser(long id) {
         Optional<User> user = userRepository.findOne(id);
         if (user.isEmpty()) throw new NotFoundException(User.class.getSimpleName(), id);
-    }
-
-    private Collection<User> collisionFriends(Collection<User> friends1, Collection<User> friends2) {
-        return friends1.stream()
-                .filter(friends2::contains)
-                .collect(Collectors.toList());
     }
 }

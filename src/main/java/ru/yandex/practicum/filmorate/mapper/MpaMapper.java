@@ -10,4 +10,8 @@ public class MpaMapper {
     public static MpaWithId mapToMpaWithId(MpaWithIdAndName mpaWithIdAndName) {
         return new MpaWithId(mpaWithIdAndName.getId());
     }
+
+    public static MpaWithIdAndName mapToMpaWithIdAndName(MpaWithId mpaWithId) {
+        return new MpaWithIdAndName(mpaWithId.getId(),null);
+    }
 }

@@ -2,14 +2,18 @@ package ru.yandex.practicum.filmorate.dto.dtoclasses;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.yandex.practicum.filmorate.model.GenreWithId;
 
-public class MpaWithIdAndName extends GenreWithId {
-    @Getter
-    @Setter
+@Getter
+@Setter
+public class MpaWithIdAndName {
+    Integer id;
     String name;
 
     public MpaWithIdAndName() {
-        super();
+    }
+
+    public MpaWithIdAndName(Integer id, String name) {
+        this.id = id;
+        this.name = name;
     }
 }

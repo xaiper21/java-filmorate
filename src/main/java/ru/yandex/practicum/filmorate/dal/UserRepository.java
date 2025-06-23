@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.catsgram.dal.BaseRepository;
 import ru.yandex.practicum.filmorate.model.User;
 
+import javax.swing.plaf.PanelUI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,18 @@ public class UserRepository extends BaseRepository<User> {
     private static final String INSERT_FRIEND_QUERY = "INSERT INTO friendship (user_one_id, user_two_id) VALUES (?, ?)";
     private static final String DELETE_FRIEND_BY_USER_ONE_ID_QUERY = "DELETE FROM friendship WHERE user_one_id = ? AND " +
             "user_two_id = ?";
+    private static final String FIND_MUTUAL_FRIENDS_BY_ID_USERS = "SELECT USERS.ID, " +
+            "       USERS.NAME, " +
+            "       USERS.EMAIL, " +
+            "       USERS.LOGIN, " +
+            "       USERS.BIRTHDAY " +
+            "FROM USERS " +
+            "WHERE USERS.ID IN ( " +
+            "    SELECT FRIENDSHIP.USER_TWO_ID FROM FRIENDSHIP " +
+            "    WHERE USER_ONE_ID = ? AND  USER_TWO_ID IN ( " +
+            "        SELECT FRIENDSHIP.USER_TWO_ID FROM FRIENDSHIP " +
+            "        WHERE USER_ONE_ID = ? " +
+            "        ))";
 
 
     public UserRepository(JdbcTemplate jdbc, RowMapper<User> mapper) {
@@ -72,5 +85,9 @@ public class UserRepository extends BaseRepository<User> {
 
     public void deleteFriend(long userOneId, long userTwoId) {
         super.delete(DELETE_FRIEND_BY_USER_ONE_ID_QUERY, userOneId, userTwoId);
+    }
+
+    public Collection<User> findAllMutualFriendsByIdUsers(Long userOneId, Long userTwoId) {
+        return super.findMany(FIND_MUTUAL_FRIENDS_BY_ID_USERS, userOneId, userTwoId);
     }
 }
