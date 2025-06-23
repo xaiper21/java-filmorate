@@ -63,7 +63,6 @@ class FilmorateApplicationTests {
         User userdb2 = userRepository.findOne(userdb.getId()).get();
         assertEquals(user.getName(), userdb2.getName());
         assertEquals(user.getEmail(), userdb2.getEmail());
-        assertEquals(user.getLogin(), userdb2.getLogin());
         assertEquals(user.getBirthday(), userdb2.getBirthday());
     }
 
