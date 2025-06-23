@@ -7,9 +7,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.catsgram.dal.BaseRepository;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 public class FilmRepository extends BaseRepository<Film> {
@@ -57,6 +55,7 @@ public class FilmRepository extends BaseRepository<Film> {
             "    LEFT JOIN rating AS r ON f.rating_id = r.id " +
             "    LEFT JOIN FILM_GENRE AS FG ON f.ID = FG.FILM_ID " +
             "WHERE FG.GENRE_ID = ?";
+    public static final String GET_ALL_FILM_GENRE = "SELECT film_id, genre_id FROM film_genre ORDER BY film_id";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -104,5 +103,17 @@ public class FilmRepository extends BaseRepository<Film> {
 
     public Collection<Film> getFilmsByGenre(Integer genreId) {
         return super.findMany(FIND_FILM_BY_GENRE_ID, genreId);
+    }
+
+    public Map<Long, List<Integer>> getAllFilmGenres() {
+        return jdbc.query(GET_ALL_FILM_GENRE, rs -> {
+            Map<Long, List<Integer>> result = new HashMap<>();
+            while (rs.next()) {
+                long filmId = rs.getLong("film_id");
+                int genreId = rs.getInt("genre_id");
+                result.computeIfAbsent(filmId, k -> new ArrayList<>()).add(genreId);
+            }
+            return result;
+        });
     }
 }
