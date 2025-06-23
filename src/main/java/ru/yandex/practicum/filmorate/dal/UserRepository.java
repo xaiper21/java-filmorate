@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.catsgram.dal.BaseRepository;
 import ru.yandex.practicum.filmorate.model.User;
 
-import javax.swing.plaf.PanelUI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
