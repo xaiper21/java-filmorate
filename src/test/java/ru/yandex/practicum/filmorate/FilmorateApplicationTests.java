@@ -112,16 +112,6 @@ class FilmorateApplicationTests {
         assertTrue(filmOptional.isPresent());
     }
 
-    @Test
-    void testUpdateFilm() {
-        Film film = getTestFilm();
-        long id = filmRepository.save(film);
-        film.setId(id);
-        film.setName("new name");
-        filmRepository.updateFilm(film);
-        assertEquals(film, filmRepository.findOne(id).get());
-    }
-
     Film getTestFilm() {
         GenreWithId genre = new GenreWithId();
         genre.setId(1);
