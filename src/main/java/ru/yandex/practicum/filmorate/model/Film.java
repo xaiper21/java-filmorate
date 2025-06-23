@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
-import ru.yandex.practicum.filmorate.dto.dtoclasses.GenreWithIdAndName;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.MpaWithIdAndName;
 
 import java.time.LocalDate;
