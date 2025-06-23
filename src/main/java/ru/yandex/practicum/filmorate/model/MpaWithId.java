@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class MpaWithId {
-    Integer id;
+    private Integer id;
 
     public MpaWithId(Integer id) {
         this.id = id;

@@ -6,8 +6,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GenreWithIdAndName {
-    Integer id;
-    String name;
+    private Integer id;
+    private String name;
 
     public GenreWithIdAndName() {
     }

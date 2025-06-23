@@ -12,14 +12,14 @@ import java.time.LocalDate;
 @Data
 @EqualsAndHashCode(of = "id")
 public class User {
-    Long id;
+    private Long id;
     @NotNull
     @Email
-    String email;
+    private String email;
     @NotBlank
-    String login;
-    String name;
+    private String login;
+    private String name;
     @NotNull
     @Past
-    LocalDate birthday;
+    private LocalDate birthday;
 }

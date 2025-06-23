@@ -10,14 +10,14 @@ import java.time.LocalDate;
 
 @Data
 public class UserDto {
-    Long id;
+    private Long id;
     @NotNull
     @Email
-    String email;
+    private String email;
     @NotBlank
-    String login;
-    String name;
+    private String login;
+    private String name;
     @NotNull
     @Past
-    LocalDate birthday;
+    private LocalDate birthday;
 }
