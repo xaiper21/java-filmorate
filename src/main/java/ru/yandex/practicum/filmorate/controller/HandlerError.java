@@ -7,10 +7,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import ru.yandex.practicum.filmorate.exception.DateNotValidException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.NotFoundLikeException;
-import ru.yandex.practicum.filmorate.exception.NullObject;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
 @Slf4j
@@ -18,7 +16,8 @@ import ru.yandex.practicum.filmorate.model.ErrorResponse;
 @ControllerAdvice
 public class HandlerError {
 
-    @ExceptionHandler({NotFoundException.class, NotFoundLikeException.class, NullObject.class})
+    @ExceptionHandler({NotFoundException.class, NotFoundLikeException.class, NullObject.class,
+            InternalServerException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse checkNotFound(Exception e) {
         log.trace("Обработка NotFoundException");
@@ -26,7 +25,8 @@ public class HandlerError {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({MethodArgumentNotValidException.class, DateNotValidException.class})
+    @ExceptionHandler({MethodArgumentNotValidException.class, DateNotValidException.class,
+            HandlerMethodValidationException.class})
     public ErrorResponse checkValidError(Exception e) {
         log.trace("Обработка ошибки валидации {}", e.getMessage());
         return new ErrorResponse("Ошибка валидации данных " + e.getMessage());
