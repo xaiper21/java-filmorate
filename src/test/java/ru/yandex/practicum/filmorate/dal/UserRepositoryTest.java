@@ -13,14 +13,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 
 class UserRepositoryTest {
@@ -49,11 +43,11 @@ class UserRepositoryTest {
 
     @Test
     void deleteUser_userNotFound_returnsFalse() {
-        doReturn(Optional.empty()).when(userRepository).findOne(nonExistingUserId);
+        doReturn(false).when(userRepository).delete(nonExistingUserId);
         boolean result = userRepository.deleteUser(nonExistingUserId);
 
         assertFalse(result);
-        verify(jdbcTemplate, never()).update(anyString(), anyLong());
+        verify(jdbcTemplate).update(anyString(), eq(nonExistingUserId));
     }
 
     @Test

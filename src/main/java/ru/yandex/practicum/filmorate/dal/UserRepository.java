@@ -91,10 +91,7 @@ public class UserRepository extends BaseRepository<User> {
     }
 
     public boolean deleteUser(long id) {
-        if (findOne(id).isEmpty()) {
-            return false;
-        }
-        return jdbc.update(DELETE_BY_ID_QUERY, id) > 0;
+        return super.delete(DELETE_BY_ID_QUERY, id);
     }
 
 }
