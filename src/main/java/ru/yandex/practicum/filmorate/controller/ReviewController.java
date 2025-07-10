@@ -70,4 +70,4 @@ public class ReviewController {
         log.info("DELETE /reviews/{}/dislike/{} - Удаление дизлайка отзыву", id, userId);
         reviewService.removeLikeFromReview(id, userId);
     }
-}
+} // Все постман тесты прошли
