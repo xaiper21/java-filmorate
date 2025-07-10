@@ -118,7 +118,7 @@ public class FilmRepository extends BaseRepository<Film> {
         });
     }
 
-    public void delete(long id) {
-        super.delete(DELETE_BY_ID_QUERY, id);
+    public boolean delete(long id) {
+        return super.delete(DELETE_BY_ID_QUERY, id);
     }
 }

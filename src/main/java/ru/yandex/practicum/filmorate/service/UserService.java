@@ -85,9 +85,7 @@ public class UserService {
     }
 
     public void deleteUser(long id) {
-        containsUser(id);
-        boolean deleted = userRepository.deleteUser(id);
-        if (!deleted) {
+        if (!userRepository.delete(id)) {
             throw new NotFoundException(User.class.getSimpleName(), id);
         }
     }

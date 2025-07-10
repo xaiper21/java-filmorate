@@ -134,8 +134,9 @@ public class FilmService {
     }
 
     public void deleteFilm(Long id) {
-        containsFilm(id);
-        filmRepository.delete(id);
+        if (!filmRepository.delete(id)) {
+            throw new NotFoundException(Film.class.getName(), id);
+        }
     }
 
     private List<GenreWithId> checkAndRemoveDuplicateAndContains(List<GenreWithId> genre,
@@ -173,11 +174,6 @@ public class FilmService {
         return genreIds.stream()
                 .map(genreId -> new GenreWithIdAndName(genreId, mapAllGenres.get(genreId)))
                 .collect(Collectors.toList());
-    }
-
-    private void containsFilm(long filmId) {
-        filmRepository.findOne(filmId)
-                .orElseThrow(() -> new NotFoundException(Film.class.getName(), filmId));
     }
 
 }
