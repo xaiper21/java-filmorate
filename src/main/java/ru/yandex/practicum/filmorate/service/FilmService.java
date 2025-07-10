@@ -133,6 +133,11 @@ public class FilmService {
                 genreRepository.findAllGenresFilm(film.getId()));
     }
 
+    public void deleteFilm(Long id) {
+        containsFilm(id);
+        filmRepository.delete(id);
+    }
+
     private List<GenreWithId> checkAndRemoveDuplicateAndContains(List<GenreWithId> genre,
                                                                  Map<Integer, String> mapAllGenres) {
         List<GenreWithId> result = new ArrayList<>();
@@ -170,5 +175,9 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
+    private void containsFilm(long filmId) {
+        filmRepository.findOne(filmId)
+                .orElseThrow(() -> new NotFoundException(Film.class.getName(), filmId));
+    }
 
 }

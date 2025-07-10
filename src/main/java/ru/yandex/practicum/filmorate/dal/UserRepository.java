@@ -89,4 +89,12 @@ public class UserRepository extends BaseRepository<User> {
     public Collection<User> findAllMutualFriendsByIdUsers(Long userOneId, Long userTwoId) {
         return super.findMany(FIND_MUTUAL_FRIENDS_BY_ID_USERS, userOneId, userTwoId);
     }
+
+    public boolean deleteUser(long id) {
+        if (findOne(id).isEmpty()) {
+            return false;
+        }
+        return jdbc.update(DELETE_BY_ID_QUERY, id) > 0;
+    }
+
 }

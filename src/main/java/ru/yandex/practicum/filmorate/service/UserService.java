@@ -84,8 +84,22 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    public void deleteUser(long id) {
+        containsUser(id);
+        boolean deleted = userRepository.deleteUser(id);
+        if (!deleted) {
+            throw new NotFoundException(User.class.getSimpleName(), id);
+        }
+    }
+
     void containsUser(long id) {
         Optional<User> user = userRepository.findOne(id);
         if (user.isEmpty()) throw new NotFoundException(User.class.getSimpleName(), id);
+    }
+
+    public UserDto findById(Long id) {
+        Optional<User> userOpt = userRepository.findOne(id);
+        return userOpt.map(UserMapper::mapToUserDto)
+                .orElseThrow(() -> new NotFoundException(User.class.getSimpleName(), id));
     }
 }

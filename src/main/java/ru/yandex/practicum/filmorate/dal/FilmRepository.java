@@ -56,6 +56,7 @@ public class FilmRepository extends BaseRepository<Film> {
             "    LEFT JOIN FILM_GENRE AS FG ON f.ID = FG.FILM_ID " +
             "WHERE FG.GENRE_ID = ?";
     public static final String GET_ALL_FILM_GENRE = "SELECT film_id, genre_id FROM film_genre ORDER BY film_id";
+    private static final String DELETE_BY_ID_QUERY = "DELETE FROM film WHERE id=?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -115,5 +116,9 @@ public class FilmRepository extends BaseRepository<Film> {
             }
             return result;
         });
+    }
+
+    public void delete(long id) {
+        super.delete(DELETE_BY_ID_QUERY, id);
     }
 }

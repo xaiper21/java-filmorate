@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.UserDto;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -57,5 +58,18 @@ public class UserController {
     public Collection<UserDto> findMutualFriends(@PathVariable long id, @PathVariable long otherId) {
         log.trace("Получение общих друзей");
         return userService.findMutualFriends(id, otherId);
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        log.info("Удаление пользователя с id {}", userId);
+        userService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
+        UserDto userDto = userService.findById(id);
+        return ResponseEntity.ok(userDto);
     }
 }

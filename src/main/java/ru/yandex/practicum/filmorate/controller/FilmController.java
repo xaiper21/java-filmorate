@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.create.FilmCreateRequestDto;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.FilmResponseDto;
@@ -59,5 +60,12 @@ public class FilmController {
     @GetMapping("/{id}")
     public FilmResponseDto findFilmById(@PathVariable Integer id) {
         return filmService.findFilmById(id);
+    }
+
+    @DeleteMapping("/{filmId}")
+    public ResponseEntity<Void> deleteFilm(@PathVariable Long filmId) {
+        log.trace("Контроллер удаления фильма с id {}", filmId);
+        filmService.deleteFilm(filmId);
+        return ResponseEntity.noContent().build();
     }
 }
