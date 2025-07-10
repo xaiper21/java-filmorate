@@ -97,8 +97,38 @@ public class FilmRepository extends BaseRepository<Film> {
         super.delete(REMOVE_LIKE_QUERY, userId, filmId);
     }
 
-    public Collection<Film> getPopularFilms(int count) {
-        return super.findMany(FIND_POPULAR_FILM_QUERY, count);
+    public Collection<Film> getPopularFilms(int count, Integer genreId, Integer year) {
+        List<Integer> params = new ArrayList<>();
+        StringBuilder query = new StringBuilder("SELECT " +
+                "    f.ID, " +
+                "    f.NAME, " +
+                "    f.DESCRIPTION, " +
+                "    f.RELEASE_DATE, " +
+                "    f.DURATION, " +
+                "    f.RATING_ID, " +
+                "    r.name AS rating_name " +
+                "FROM " +
+                "    FILM AS f " +
+                "LEFT JOIN rating AS r ON f.rating_id = r.id " +
+                "LEFT JOIN " +
+                "    (SELECT film_id, COUNT(film_id) AS like_count FROM film_like GROUP BY film_id) AS likes " +
+                "    ON f.ID = likes.film_id ");
+        if (genreId != null) {
+            query.append("LEFT JOIN film_genre AS fg ON f.id = fg.film_id ");
+            query.append("WHERE fg.genre_id = ? ");
+            params.add(genreId);
+        }
+        if (year != null) {
+            if (genreId != null) {
+                query.append(" AND EXTRACT(YEAR FROM f.RELEASE_DATE) = ? ");
+            } else query.append(" WHERE EXTRACT(YEAR FROM f.RELEASE_DATE) = ? ");
+            params.add(year);
+        }
+        query.append("ORDER BY " +
+                "    COALESCE(likes.like_count, 0) DESC " +
+                "LIMIT ?");
+        params.add(count);
+        return super.findMany(query.toString(), params.toArray());
     }
 
     public Collection<Film> getFilmsByGenre(Integer genreId) {
