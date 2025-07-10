@@ -9,15 +9,14 @@ import java.util.Optional;
 
 @Repository
 public class ReviewLikeRepository {
-    private final JdbcTemplate jdbc;
-    private final RowMapper<ReviewLike> mapper;
-
     private static final String INSERT_QUERY = "MERGE INTO review_likes KEY (review_id, user_id) VALUES (?, ?, ?)";
     private static final String DELETE_QUERY = "DELETE FROM review_likes WHERE review_id=? AND user_id=?";
     private static final String FIND_BY_REVIEW_AND_USER_QUERY = "SELECT * FROM review_likes WHERE review_id=? AND user_id=?";
     private static final String UPDATE_QUERY = "UPDATE review_likes SET is_like=? WHERE review_id=? AND user_id=?";
     private static final String COUNT_LIKES_QUERY = "SELECT COUNT(*) FROM review_likes WHERE review_id=? AND is_like=true";
     private static final String COUNT_DISLIKES_QUERY = "SELECT COUNT(*) FROM review_likes WHERE review_id=? AND is_like=false";
+    private final JdbcTemplate jdbc;
+    private final RowMapper<ReviewLike> mapper;
 
     public ReviewLikeRepository(JdbcTemplate jdbc, RowMapper<ReviewLike> mapper) {
         this.jdbc = jdbc;
