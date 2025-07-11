@@ -10,20 +10,6 @@ import java.util.*;
 
 @Repository
 public class FilmRepository extends BaseRepository<Film> {
-    public static final String FIND_FILM_BY_GENRE_ID = "SELECT " +
-            "    f.ID, " +
-            "    f.NAME, " +
-            "    f.DESCRIPTION, " +
-            "    f.RELEASE_DATE, " +
-            "    f.DURATION, " +
-            "    f.RATING_ID " +
-            "    r.name AS rating_name " +
-            "FROM " +
-            "    FILM AS f " +
-            "    LEFT JOIN rating AS r ON f.rating_id = r.id " +
-            "    LEFT JOIN FILM_GENRE AS FG ON f.ID = FG.FILM_ID " +
-            "WHERE FG.GENRE_ID = ?";
-    public static final String GET_ALL_FILM_GENRE = "SELECT film_id, genre_id FROM film_genre ORDER BY film_id";
     private static final String INSERT_QUERY = "INSERT INTO film (name, description, release_date, duration," +
             " rating_id)" +
             "VALUES (?, ?, ?, ?, ?)";
@@ -55,6 +41,39 @@ public class FilmRepository extends BaseRepository<Film> {
             "ORDER BY " +
             "    COALESCE(likes.like_count, 0) DESC " +
             "LIMIT ?";
+    public static final String FIND_FILM_BY_GENRE_ID = "SELECT " +
+            "    f.ID, " +
+            "    f.NAME, " +
+            "    f.DESCRIPTION, " +
+            "    f.RELEASE_DATE, " +
+            "    f.DURATION, " +
+            "    f.RATING_ID " +
+            "    r.name AS rating_name " +
+            "FROM " +
+            "    FILM AS f " +
+            "    LEFT JOIN rating AS r ON f.rating_id = r.id " +
+            "    LEFT JOIN FILM_GENRE AS FG ON f.ID = FG.FILM_ID " +
+            "WHERE FG.GENRE_ID = ?";
+    public static final String GET_ALL_FILM_GENRE = "SELECT film_id, genre_id FROM film_genre ORDER BY film_id";
+    private static final String DELETE_BY_ID_QUERY = "DELETE FROM film WHERE id=?";
+    private static final String FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY = "SELECT f.*, r.name AS rating_name\n" +
+            "FROM film f\n" +
+            "JOIN film_like fl ON f.id = fl.film_id\n" +
+            "JOIN rating r ON f.rating_id = r.id\n" +
+            "WHERE fl.user_id = (\n" +
+            "    SELECT user_id\n" +
+            "    FROM film_like\n" +
+            "    WHERE film_id IN (SELECT film_id FROM film_like WHERE user_id = ?)\n" +
+            "    AND user_id != ?\n" +
+            "    GROUP BY user_id\n" +
+            "    ORDER BY COUNT(*) DESC\n" +
+            "    LIMIT 1\n" +
+            ")\n" +
+            "AND f.id NOT IN (\n" +
+            "    SELECT film_id\n" +
+            "    FROM film_like\n" +
+            "    WHERE user_id = ?\n" +
+            ")";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -96,8 +115,38 @@ public class FilmRepository extends BaseRepository<Film> {
         super.delete(REMOVE_LIKE_QUERY, userId, filmId);
     }
 
-    public Collection<Film> getPopularFilms(int count) {
-        return super.findMany(FIND_POPULAR_FILM_QUERY, count);
+    public Collection<Film> getPopularFilms(int count, Integer genreId, Integer year) {
+        List<Integer> params = new ArrayList<>();
+        StringBuilder query = new StringBuilder("SELECT " +
+                "    f.ID, " +
+                "    f.NAME, " +
+                "    f.DESCRIPTION, " +
+                "    f.RELEASE_DATE, " +
+                "    f.DURATION, " +
+                "    f.RATING_ID, " +
+                "    r.name AS rating_name " +
+                "FROM " +
+                "    FILM AS f " +
+                "LEFT JOIN rating AS r ON f.rating_id = r.id " +
+                "LEFT JOIN " +
+                "    (SELECT film_id, COUNT(film_id) AS like_count FROM film_like GROUP BY film_id) AS likes " +
+                "    ON f.ID = likes.film_id ");
+        if (genreId != null) {
+            query.append("LEFT JOIN film_genre AS fg ON f.id = fg.film_id ");
+            query.append("WHERE fg.genre_id = ? ");
+            params.add(genreId);
+        }
+        if (year != null) {
+            if (genreId != null) {
+                query.append(" AND EXTRACT(YEAR FROM f.RELEASE_DATE) = ? ");
+            } else query.append(" WHERE EXTRACT(YEAR FROM f.RELEASE_DATE) = ? ");
+            params.add(year);
+        }
+        query.append("ORDER BY " +
+                "    COALESCE(likes.like_count, 0) DESC " +
+                "LIMIT ?");
+        params.add(count);
+        return super.findMany(query.toString(), params.toArray());
     }
 
     public Collection<Film> getFilmsByGenre(Integer genreId) {
@@ -114,5 +163,13 @@ public class FilmRepository extends BaseRepository<Film> {
             }
             return result;
         });
+    }
+
+    public Collection<Film> recommendationMovies(long userId) {
+        return super.findMany(FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY, userId, userId, userId);
+    }
+
+    public boolean delete(long id) {
+        return super.delete(DELETE_BY_ID_QUERY, id);
     }
 }
