@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.dtoclasses.FilmResponseDto;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.UserDto;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -57,5 +58,10 @@ public class UserController {
     public Collection<UserDto> findMutualFriends(@PathVariable long id, @PathVariable long otherId) {
         log.trace("Получение общих друзей");
         return userService.findMutualFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public Collection<FilmResponseDto> recommendationMovies(@PathVariable long id) {
+        return userService.recommendationMovies(id);
     }
 }

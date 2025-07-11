@@ -4,7 +4,6 @@ package ru.yandex.practicum.filmorate.dal;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.catsgram.dal.BaseRepository;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
@@ -56,6 +55,24 @@ public class FilmRepository extends BaseRepository<Film> {
             "    LEFT JOIN FILM_GENRE AS FG ON f.ID = FG.FILM_ID " +
             "WHERE FG.GENRE_ID = ?";
     public static final String GET_ALL_FILM_GENRE = "SELECT film_id, genre_id FROM film_genre ORDER BY film_id";
+    private static final String FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY = "SELECT f.*, r.name AS rating_name\n" +
+            "FROM film f\n" +
+            "JOIN film_like fl ON f.id = fl.film_id\n" +
+            "JOIN rating r ON f.rating_id = r.id\n" +
+            "WHERE fl.user_id = (\n" +
+            "    SELECT user_id\n" +
+            "    FROM film_like\n" +
+            "    WHERE film_id IN (SELECT film_id FROM film_like WHERE user_id = ?)\n" +
+            "    AND user_id != ?\n" +
+            "    GROUP BY user_id\n" +
+            "    ORDER BY COUNT(*) DESC\n" +
+            "    LIMIT 1\n" +
+            ")\n" +
+            "AND f.id NOT IN (\n" +
+            "    SELECT film_id\n" +
+            "    FROM film_like\n" +
+            "    WHERE user_id = ?\n" +
+            ")";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -145,5 +162,9 @@ public class FilmRepository extends BaseRepository<Film> {
             }
             return result;
         });
+    }
+
+    public Collection<Film> recommendationMovies(long userId) {
+        return super.findMany(FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY, userId, userId, userId);
     }
 }
