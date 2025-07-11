@@ -55,6 +55,7 @@ public class FilmRepository extends BaseRepository<Film> {
             "    LEFT JOIN FILM_GENRE AS FG ON f.ID = FG.FILM_ID " +
             "WHERE FG.GENRE_ID = ?";
     public static final String GET_ALL_FILM_GENRE = "SELECT film_id, genre_id FROM film_genre ORDER BY film_id";
+    private static final String DELETE_BY_ID_QUERY = "DELETE FROM film WHERE id=?";
     private static final String FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY = "SELECT f.*, r.name AS rating_name\n" +
             "FROM film f\n" +
             "JOIN film_like fl ON f.id = fl.film_id\n" +
@@ -166,5 +167,9 @@ public class FilmRepository extends BaseRepository<Film> {
 
     public Collection<Film> recommendationMovies(long userId) {
         return super.findMany(FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY, userId, userId, userId);
+    }
+
+    public boolean delete(long id) {
+        return super.delete(DELETE_BY_ID_QUERY, id);
     }
 }

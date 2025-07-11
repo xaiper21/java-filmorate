@@ -136,6 +136,12 @@ public class FilmService {
                 genreRepository.findAllGenresFilm(film.getId()));
     }
 
+    public void deleteFilm(Long id) {
+        if (!filmRepository.delete(id)) {
+            throw new NotFoundException(Film.class.getName(), id);
+        }
+    }
+
     private List<GenreWithId> checkAndRemoveDuplicateAndContains(List<GenreWithId> genre,
                                                                  Map<Integer, String> mapAllGenres) {
         List<GenreWithId> result = new ArrayList<>();
@@ -172,6 +178,5 @@ public class FilmService {
                 .map(genreId -> new GenreWithIdAndName(genreId, mapAllGenres.get(genreId)))
                 .collect(Collectors.toList());
     }
-
 
 }

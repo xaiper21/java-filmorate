@@ -104,4 +104,16 @@ public class UserService {
         Optional<User> user = userRepository.findOne(id);
         if (user.isEmpty()) throw new NotFoundException(User.class.getSimpleName(), id);
     }
+
+    public UserDto findById(Long id) {
+        Optional<User> userOpt = userRepository.findOne(id);
+        return userOpt.map(UserMapper::mapToUserDto)
+                .orElseThrow(() -> new NotFoundException(User.class.getSimpleName(), id));
+    }
+
+    public void deleteUser(long id) {
+        if (!userRepository.delete(id)) {
+            throw new NotFoundException(User.class.getSimpleName(), id);
+        }
+    }
 }

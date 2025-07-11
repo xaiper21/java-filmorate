@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.FilmResponseDto;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.UserDto;
@@ -63,5 +64,18 @@ public class UserController {
     @GetMapping("/{id}/recommendations")
     public Collection<FilmResponseDto> recommendationMovies(@PathVariable long id) {
         return userService.recommendationMovies(id);
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        log.info("Удаление пользователя с id {}", userId);
+        userService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
+        UserDto userDto = userService.findById(id);
+        return ResponseEntity.ok(userDto);
     }
 }
