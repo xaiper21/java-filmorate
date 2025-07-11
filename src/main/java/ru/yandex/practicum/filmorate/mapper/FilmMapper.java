@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.mapper;
 
 import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.dto.create.FilmCreateRequestDto;
+import ru.yandex.practicum.filmorate.dto.dtoclasses.FilmResponseDto;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.GenreWithIdAndName;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.MpaWithIdAndName;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.dto.create.FilmCreateRequestDto;
 import ru.yandex.practicum.filmorate.dto.update.FilmUpdateDto;
-import ru.yandex.practicum.filmorate.dto.dtoclasses.FilmResponseDto;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.GenreWithId;
 
 import java.util.List;
