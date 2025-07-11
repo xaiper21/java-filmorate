@@ -179,4 +179,16 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
+    public Collection<FilmResponseDto> findCommonFilms(long userId, long friendId) {
+        Map<Integer, String> allFullGenres = getMapGenres();
+        Map<Long, List<Integer>> mapFilmIdAndGenreIds = filmRepository.getAllFilmGenres();
+
+        Collection<Film> commonFilms = filmRepository.findCommonFilmsByUsers(userId, friendId);
+
+        return commonFilms.stream()
+                .map(film -> FilmMapper.buildResponse(film,
+                        genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres)))
+                .collect(Collectors.toList());
+    }
+
 }
