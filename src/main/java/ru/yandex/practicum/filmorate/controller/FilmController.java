@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.dto.update.FilmUpdateDto;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
@@ -59,5 +60,10 @@ public class FilmController {
     @GetMapping("/{id}")
     public FilmResponseDto findFilmById(@PathVariable Integer id) {
         return filmService.findFilmById(id);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<FilmResponseDto> getFilmsByDirector(@PathVariable Long directorId, @RequestParam(required = false, defaultValue = "likes") String sortBy) {
+        return filmService.getFilmsByDirector(directorId, sortBy);
     }
 }

@@ -56,18 +56,7 @@ CREATE TABLE  IF NOT EXISTS rating (
     name VARCHAR(10) UNIQUE NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS directors (
-         id BIGINT PRIMARY KEY AUTO_INCREMENT,
-         name VARCHAR(100) UNIQUE NOT NULL
-    );
-
-CREATE TABLE IF NOT EXISTS film_director (
-         film_id BIGINT NOT NULL,
-         director_id BIGINT NOT NULL,
-         PRIMARY KEY (film_id, director_id),
-         CONSTRAINT fk_film_director_film FOREIGN KEY (film_id) REFERENCES film(id) ON DELETE CASCADE,
-         CONSTRAINT fk_film_director_director FOREIGN KEY (director_id) REFERENCES directors(id) ON DELETE CASCADE
-    );
+ 
 -- ON DELETE CASCADE здесь важен: при удалении фильма или режиссёра
 -- соответствующая запись в этой таблице будет удалена автоматически.
 
