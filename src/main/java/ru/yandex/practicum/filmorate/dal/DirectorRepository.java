@@ -12,9 +12,6 @@ import java.util.*;
 
 @Repository
 public class DirectorRepository {
-    private final JdbcTemplate jdbc;
-    private final RowMapper<DirectorDto> mapper;
-
     private static final String FIND_ALL_QUERY = "SELECT id, name FROM directors";
     private static final String FIND_BY_ID_QUERY = "SELECT id, name FROM directors WHERE id = ?";
     private static final String INSERT_QUERY = "INSERT INTO directors (name) VALUES (?)";
@@ -38,6 +35,8 @@ public class DirectorRepository {
             "LEFT JOIN film_director fd ON f.id = fd.film_id " +
             "WHERE fd.director_id = ? " +
             "ORDER BY f.release_date";
+    private final JdbcTemplate jdbc;
+    private final RowMapper<DirectorDto> mapper;
 
     public DirectorRepository(JdbcTemplate jdbc, DirectorRowMapper mapper) {
         this.jdbc = jdbc;
