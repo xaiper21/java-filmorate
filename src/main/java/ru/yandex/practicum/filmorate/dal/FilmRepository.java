@@ -92,6 +92,11 @@ public class FilmRepository extends BaseRepository<Film> {
     public Optional<Film> findOne(long id) {
         return super.findOne(FIND_BY_ID_QUERY, id);
     }
+/*
+    public Optional<Film> findLik(long id) {
+        String test = "SELECT created_at FROM film_like WHERE film_id = ?";
+        return super.findOne(test, id);
+    }*/
 
     public void updateFilm(Film film) {
         super.update(UPDATE_FILM_QUERY,

@@ -13,6 +13,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.NullObject;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.OperationType;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -27,6 +29,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
     private final GenreRepository genreRepository;
+    private final EventService eventService;
 
     public UserDto create(UserDto userDto) {
         log.trace("Сервисный метод добавление пользователя");
@@ -56,6 +59,7 @@ public class UserService {
         containsUser(id);
         containsUser(friendId);
         userRepository.addFriend(id, friendId);
+        eventService.createEvent(id, friendId, EventType.FRIEND, OperationType.ADD);
         return true;
     }
 
@@ -64,6 +68,7 @@ public class UserService {
         containsUser(id);
         containsUser(friendId);
         userRepository.deleteFriend(id, friendId);
+        eventService.createEvent(id, friendId, EventType.FRIEND, OperationType.REMOVE);
         return true;
     }
 
