@@ -12,7 +12,7 @@ import java.sql.SQLException;
 @Component
 public class EventRowMapper implements RowMapper<Event> {
     @Override
-    public Event mapRow(ResultSet rs, int RowNum) throws SQLException {
+    public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
         Event event = Event.builder().build();
         event.setEventId(rs.getInt("id"));
         event.setTimestamp(rs.getTimestamp("event_timestamp"));
