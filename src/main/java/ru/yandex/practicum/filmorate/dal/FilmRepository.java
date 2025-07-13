@@ -4,6 +4,8 @@ package ru.yandex.practicum.filmorate.dal;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dal.mappers.DirectorRowMapper;
+import ru.yandex.practicum.filmorate.dto.dtoclasses.DirectorDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
@@ -114,5 +116,28 @@ public class FilmRepository extends BaseRepository<Film> {
             }
             return result;
         });
+    }
+
+    // FilmRepository.java
+    private static final String DELETE_DIRECTORS_FOR_FILM = "DELETE FROM film_director WHERE film_id = ?";
+
+    public void insertDirectorsForFilm(List<DirectorDto> directors, Long filmId) {
+        if (directors == null || directors.isEmpty()) {
+            return;
+        }
+        String sql = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
+        directors.forEach(director -> jdbc.update(sql, filmId, director.getId()));
+    }
+
+    public void updateDirectorsForFilm(List<DirectorDto> directors, Long filmId) {
+        jdbc.update(DELETE_DIRECTORS_FOR_FILM, filmId);
+        insertDirectorsForFilm(directors, filmId);
+    }
+
+    public List<DirectorDto> findDirectorsByFilmId(Long filmId) {
+        String sql = "SELECT d.id, d.name FROM directors d " +
+                "JOIN film_director fd ON d.id = fd.director_id " +
+                "WHERE fd.film_id = ?";
+        return jdbc.query(sql, new DirectorRowMapper(), filmId);
     }
 }

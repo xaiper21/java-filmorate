@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.dto.dtoclasses.DirectorDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class DirectorRepository {
@@ -96,5 +97,21 @@ public class DirectorRepository {
             }
             return result;
         });
+    }
+
+    public void updateDirectorsForFilm(List<DirectorDto> directors, Long filmId) {
+        if (directors == null) {
+            throw new IllegalArgumentException("Directors list cannot be null");
+        }
+
+        String deleteSql = "DELETE FROM film_director WHERE film_id = ?";
+        jdbc.update(deleteSql, filmId);
+
+        if (!directors.isEmpty()) {
+            String insertSql = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
+            jdbc.batchUpdate(insertSql, directors.stream()
+                    .map(director -> new Object[]{filmId, director.getId()})
+                    .collect(Collectors.toList()));
+        }
     }
 }
