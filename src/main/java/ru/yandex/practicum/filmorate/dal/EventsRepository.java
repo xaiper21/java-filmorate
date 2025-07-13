@@ -9,7 +9,7 @@ import java.util.Collection;
 
 @Repository
 public class EventsRepository extends BaseRepository<Event> {
-    private final static String INSERT_QUERY = "" +
+    private static final String INSERT_QUERY = "" +
             "INSERT INTO events(" +
             "event_timestamp," +
             " user_id," +
@@ -17,9 +17,9 @@ public class EventsRepository extends BaseRepository<Event> {
             " operation_type," +
             " entity_id)" +
             " VALUES(?, ?, ?, ?, ?)";
-    private final static String DELETE_BY_ID_QUERY = "DELETE events WHERE id = ?;";
-    private final static String FIND_ALL_EVENTS_BY_USER_ID_QUERY = "SELECT * FROM events WHERE user_id = ?;";
-    private final static String FIND_ALL_QUERY = "SELECT * FROM events";
+    private static final String DELETE_BY_ID_QUERY = "DELETE events WHERE id = ?;";
+    private static final String FIND_ALL_EVENTS_BY_USER_ID_QUERY = "SELECT * FROM events WHERE user_id = ?;";
+    private static final String FIND_ALL_QUERY = "SELECT * FROM events";
 
     public EventsRepository(JdbcTemplate jdbcTemplate, RowMapper<Event> mapper) {
         super(jdbcTemplate, mapper);
