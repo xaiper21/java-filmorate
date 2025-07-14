@@ -75,6 +75,16 @@ public class FilmRepository extends BaseRepository<Film> {
             "    WHERE user_id = ?\n" +
             ")";
 
+    private static final String FIND_COMMON_FILMS_BY_USERS_QUERY =
+            "SELECT f.ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.name AS rating_name " +
+                    "FROM FILM f " +
+                    "LEFT JOIN rating r ON f.rating_id = r.id " +
+                    "JOIN film_like fl1 ON f.ID = fl1.film_id AND fl1.user_id = ? " +
+                    "JOIN film_like fl2 ON f.ID = fl2.film_id AND fl2.user_id = ? " +
+                    "LEFT JOIN (SELECT film_id, COUNT(user_id) AS like_count FROM film_like GROUP BY film_id) likes " +
+                    "ON f.ID = likes.film_id " +
+                    "ORDER BY COALESCE(likes.like_count, 0) DESC";
+
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
     }
@@ -164,6 +174,11 @@ public class FilmRepository extends BaseRepository<Film> {
             return result;
         });
     }
+
+    public Collection<Film> findCommonFilmsByUsers(long userId, long friendId) {
+        return super.findMany(FIND_COMMON_FILMS_BY_USERS_QUERY, userId, friendId);
+    }
+
 
     public Collection<Film> recommendationMovies(long userId) {
         return super.findMany(FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY, userId, userId, userId);
