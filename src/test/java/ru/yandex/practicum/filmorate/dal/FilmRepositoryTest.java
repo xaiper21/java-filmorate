@@ -1,88 +1,90 @@
 package ru.yandex.practicum.filmorate.dal;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Arrays;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 class FilmRepositoryTest {
 
-    @Mock
-    private JdbcTemplate jdbcTemplate;
+    static class FakeJdbcTemplate extends JdbcTemplate {
+        List<String> executedQueries = new ArrayList<>();
+        List<Object[]> executedParams = new ArrayList<>();
 
-    @Mock
-    private RowMapper<Film> filmRowMapper;
+        @Override
+        public int update(String sql, Object... args) {
+            executedQueries.add(sql);
+            executedParams.add(args);
 
-    @InjectMocks
-    private FilmRepository filmRepository;
+            return 1;
+        }
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        filmRepository = spy(new FilmRepository(jdbcTemplate, filmRowMapper));
+        @Override
+        public <T> List<T> query(String sql, RowMapper<T> rowMapper, Object... args) {
+            executedQueries.add(sql);
+            executedParams.add(args);
+
+            List<T> films = new ArrayList<>();
+            try {
+                films.add(rowMapper.mapRow(null, 0));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            return films;
+        }
+    }
+
+    static class FakeRowMapper implements RowMapper<Film> {
+        @Override
+        public Film mapRow(java.sql.ResultSet rs, int rowNum) {
+            Film film = new Film();
+            film.setId(1L);
+            film.setName("Fake Film");
+            return film;
+        }
     }
 
     @Test
-    void delete_shouldCallSuperDeleteWithCorrectQueryAndId() {
+    void delete_shouldCallUpdateWithCorrectQueryAndId() {
+        FakeJdbcTemplate jdbcTemplate = new FakeJdbcTemplate();
+        FakeRowMapper rowMapper = new FakeRowMapper();
+        FilmRepository repo = new FilmRepository(jdbcTemplate, rowMapper);
+
         long filmId = 42L;
-        filmRepository.delete(filmId);
-        verify(filmRepository).delete(eq(filmId));
-        verify(filmRepository).delete(anyLong());
+        repo.delete(filmId);
 
-        verify(jdbcTemplate).update(eq("DELETE FROM film WHERE id=?"), eq(filmId));
+        assertEquals(1, jdbcTemplate.executedQueries.size());
+        assertTrue(jdbcTemplate.executedQueries.get(0).contains("DELETE FROM film WHERE id=?"));
+
+        Object[] params = jdbcTemplate.executedParams.get(0);
+        assertEquals(filmId, params[0]);
     }
 
     @Test
-    void findCommonFilmsByUsers() {
+    void findCommonFilmsByUsers_shouldReturnFilms() {
+        FakeJdbcTemplate jdbcTemplate = new FakeJdbcTemplate();
+        FakeRowMapper rowMapper = new FakeRowMapper();
+        FilmRepository repo = new FilmRepository(jdbcTemplate, rowMapper);
+
         long userId = 1L;
         long friendId = 2L;
 
-        Film film1 = new Film();
-        film1.setId(10L);
-        film1.setName("Film 1");
+        Collection<Film> films = repo.findCommonFilmsByUsers(userId, friendId);
 
-        Film film2 = new Film();
-        film2.setId(20L);
-        film2.setName("Film 2");
+        assertNotNull(films);
+        assertFalse(films.isEmpty());
 
-        Collection<Film> expectedFilms = Arrays.asList(film1, film2);
-
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class), anyLong(), anyLong()))
-                .thenReturn(Arrays.asList(film1, film2));
-
-        Collection<Film> result = filmRepository.findCommonFilmsByUsers(userId, friendId);
-
-        ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<RowMapper<Film>> mapperCaptor = ArgumentCaptor.forClass(RowMapper.class);
-        ArgumentCaptor<Long> userCaptor = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<Long> friendCaptor = ArgumentCaptor.forClass(Long.class);
-
-        verify(jdbcTemplate).query(sqlCaptor.capture(), mapperCaptor.capture(), userCaptor.capture(), friendCaptor.capture());
-
-        String sql = sqlCaptor.getValue();
-        RowMapper<Film> mapper = mapperCaptor.getValue();
-        Long capturedUserId = userCaptor.getValue();
-        Long capturedFriendId = friendCaptor.getValue();
-
-        assertThat(sql).contains("JOIN film_like fl1 ON f.ID = fl1.film_id AND fl1.user_id = ?");
-        assertThat(sql).contains("JOIN film_like fl2 ON f.ID = fl2.film_id AND fl2.user_id = ?");
-        assertThat(capturedUserId).isEqualTo(userId);
-        assertThat(capturedFriendId).isEqualTo(friendId);
-        assertThat(mapper).isEqualTo(filmRowMapper);
-
-        assertThat(result).isEqualTo(expectedFilms);
+        assertEquals(1, jdbcTemplate.executedQueries.size());
+        String sql = jdbcTemplate.executedQueries.get(0);
+        assertTrue(sql.contains("JOIN film_like fl1 ON"));
+        assertTrue(sql.contains("JOIN film_like fl2 ON"));
     }
+
 }

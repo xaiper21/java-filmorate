@@ -2,62 +2,89 @@ package ru.yandex.practicum.filmorate.dal;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 class UserRepositoryTest {
 
-    @Mock
-    private JdbcTemplate jdbcTemplate;
+    static class FakeJdbcTemplate extends JdbcTemplate {
+        String lastSql;
+        Object[] lastParams;
+        int updateResult = 0;
 
-    @Mock
-    private RowMapper<User> userRowMapper;
+        @Override
+        public int update(String sql, Object... args) {
+            this.lastSql = sql;
+            this.lastParams = args;
+            return updateResult;
+        }
+    }
 
-    @InjectMocks
+    static class FakeUserRowMapper implements RowMapper<User> {
+        @Override
+        public User mapRow(java.sql.ResultSet rs, int rowNum) {
+            User user = new User();
+            user.setId(1L);
+            return user;
+        }
+    }
+
+    private FakeJdbcTemplate jdbcTemplate;
+    private FakeUserRowMapper userRowMapper;
     private UserRepository userRepository;
 
     private final long existingUserId = 1L;
     private final long nonExistingUserId = 2L;
 
-    private User user;
-
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        userRepository = spy(new UserRepository(jdbcTemplate, userRowMapper));
-        user = new User();
-        user.setId(existingUserId);
+        jdbcTemplate = new FakeJdbcTemplate();
+        userRowMapper = new FakeUserRowMapper();
+        userRepository = new UserRepository(jdbcTemplate, userRowMapper);
     }
 
     @Test
     void deleteUser_userNotFound_returnsFalse() {
-        doReturn(false).when(userRepository).delete(nonExistingUserId);
+
+        jdbcTemplate.updateResult = 0;
+
         boolean result = userRepository.deleteUser(nonExistingUserId);
 
         assertFalse(result);
-        verify(jdbcTemplate).update(anyString(), eq(nonExistingUserId));
+        assertNotNull(jdbcTemplate.lastSql);
+        assertTrue(jdbcTemplate.lastSql.toLowerCase().contains("delete"));
+        assertEquals(nonExistingUserId, jdbcTemplate.lastParams[0]);
     }
 
     @Test
     void deleteUser_userFound_deleteSuccessful_returnsTrue() {
-        doReturn(Optional.of(user)).when(userRepository).findOne(existingUserId);
-        when(jdbcTemplate.update(anyString(), eq(existingUserId))).thenReturn(1);
-        boolean result = userRepository.deleteUser(existingUserId);
+
+        UserRepository repoWithFindOne = new UserRepository(jdbcTemplate, userRowMapper) {
+            @Override
+            public Optional<User> findOne(long id) {
+                if (id == existingUserId) {
+                    User user = new User();
+                    user.setId(existingUserId);
+                    return Optional.of(user);
+                }
+                return Optional.empty();
+            }
+        };
+
+        jdbcTemplate.updateResult = 1;
+
+        boolean result = repoWithFindOne.deleteUser(existingUserId);
 
         assertTrue(result);
-        verify(jdbcTemplate).update(anyString(), eq(existingUserId));
+        assertNotNull(jdbcTemplate.lastSql);
+        assertTrue(jdbcTemplate.lastSql.toLowerCase().contains("delete"));
+        assertEquals(existingUserId, jdbcTemplate.lastParams[0]);
     }
 
 }
