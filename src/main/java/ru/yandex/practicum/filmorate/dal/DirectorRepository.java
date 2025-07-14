@@ -2,12 +2,15 @@ package ru.yandex.practicum.filmorate.dal;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.DirectorDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.sql.PreparedStatement;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,7 +56,14 @@ public class DirectorRepository {
     }
 
     public DirectorDto save(DirectorDto director) {
-        jdbc.update(INSERT_QUERY, director.getName());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbc.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(INSERT_QUERY, new String[]{"id"});
+            ps.setString(1, director.getName());
+            return ps;
+        }, keyHolder);
+
+        director.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
         return director;
     }
 

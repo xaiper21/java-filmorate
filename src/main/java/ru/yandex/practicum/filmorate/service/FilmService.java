@@ -40,7 +40,6 @@ public class FilmService {
         film.setId(filmRepository.save(film));
         genreRepository.insertGenresFilm(resultAdd, film.getId());
 
-        // Добавляем обработку режиссеров
         if (createRequestDto.getDirectors() != null) {
             directorRepository.insertDirectorsForFilm(createRequestDto.getDirectors(), film.getId());
         }
