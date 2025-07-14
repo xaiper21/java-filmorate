@@ -9,21 +9,24 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.EventRowMapper;
+import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.OperationType;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({EventsRepository.class, EventRowMapper.class}) // Импортируем необходимые компоненты
+@Import({EventsRepository.class, EventRowMapper.class, UserRepository.class, UserRowMapper.class}) // Импортируем необходимые компоненты
 public class EventsRepositoryTest {
 
     @Autowired
@@ -32,16 +35,29 @@ public class EventsRepositoryTest {
     @Autowired
     private EventsRepository eventsRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+
     private Event testEvent;
+    private User testUser;
 
     @BeforeEach
     void setUp() {
         jdbcTemplate.execute("DELETE FROM events");
+        jdbcTemplate.execute("DELETE FROM users");
+
+        User user = new User();
+        user.setEmail("test@user.com");
+        user.setLogin("event_user");
+        user.setName("Event User");
+        user.setBirthday(LocalDate.of(2000, 1, 1));
+        testUser = userRepository.save(user);
 
         testEvent = Event.builder()
                 .eventId(1L)
                 .timestamp(Timestamp.from(Instant.now()))
-                .userId(1L)
+                .userId(testUser.getId())
                 .eventType(EventType.LIKE)
                 .operation(OperationType.ADD)
                 .entityId(1L)
@@ -105,7 +121,7 @@ public class EventsRepositoryTest {
         Event anotherEvent = Event.builder()
                 .eventId(2L)
                 .timestamp(Timestamp.from(Instant.now()))
-                .userId(2L)
+                .userId(testUser.getId())
                 .eventType(EventType.LIKE)
                 .operation(OperationType.ADD)
                 .entityId(1L)
@@ -113,10 +129,10 @@ public class EventsRepositoryTest {
 
         eventsRepository.create(anotherEvent);
 
-        Collection<Event> events = eventsRepository.findAllByUserId(1L);
+        Collection<Event> events = eventsRepository.findAllByUserId(testUser.getId());
 
-        assertThat(events).hasSize(1);
-        assertThat(events.iterator().next().getUserId()).isEqualTo(1L);
+        assertThat(events).hasSize(2);
+        assertThat(events.iterator().next().getUserId()).isEqualTo(testUser.getId());
     }
 
     @Test
@@ -126,7 +142,7 @@ public class EventsRepositoryTest {
                 Event.builder()
                         .eventId(2L)
                         .timestamp(Timestamp.from(Instant.now()))
-                        .userId(1L)
+                        .userId(testUser.getId())
                         .eventType(EventType.LIKE)
                         .operation(OperationType.ADD)
                         .entityId(1L)
