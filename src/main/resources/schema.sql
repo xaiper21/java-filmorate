@@ -1,4 +1,4 @@
-DROP TABLE events;
+
 CREATE TABLE IF NOT EXISTS users (
              id BIGINT PRIMARY KEY AUTO_INCREMENT,
              email VARCHAR(256) UNIQUE NOT NULL,
