@@ -27,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({EventsRepository.class, EventRowMapper.class, UserRepository.class, UserRowMapper.class})
-// Импортируем необходимые компоненты
 public class EventsRepositoryTest {
 
     @Autowired
@@ -65,7 +64,6 @@ public class EventsRepositoryTest {
                 .build();
     }
 
-    // Класс для маппинга Event из ResultSet
     static class EventRowMapper implements RowMapper<Event> {
         @Override
         public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
