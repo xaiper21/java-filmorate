@@ -26,7 +26,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({EventsRepository.class, EventRowMapper.class, UserRepository.class, UserRowMapper.class}) // Импортируем необходимые компоненты
+@Import({EventsRepository.class, EventRowMapper.class, UserRepository.class, UserRowMapper.class})
+// Импортируем необходимые компоненты
 public class EventsRepositoryTest {
 
     @Autowired
