@@ -17,10 +17,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.NullObject;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.GenreMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.GenreWithId;
-import ru.yandex.practicum.filmorate.model.MpaWithId;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +30,7 @@ public class FilmService {
     private final GenreRepository genreRepository;
     private final MpaRepository mpaRepository;
     private final FilmRepository filmRepository;
+    private final EventService eventService;
 
     public FilmResponseDto createFilm(FilmCreateRequestDto createRequestDto) {
         log.trace("Сервисный метод создания фильма");
@@ -99,6 +97,7 @@ public class FilmService {
         if (optionalUser.isEmpty()) throw new NotFoundException(User.class.getName(), userId);
 
         filmRepository.setInsertLikeQuery(userId, filmId);
+        eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.ADD);
         return null;
     }
 
@@ -109,6 +108,7 @@ public class FilmService {
 
         Optional<User> optionalUser = userRepository.findOne(userId);
         if (optionalUser.isEmpty()) throw new NotFoundException(User.class.getName(), userId);
+        eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.REMOVE);
         filmRepository.removeLikeBy(userId, filmId);
         return true;
     }

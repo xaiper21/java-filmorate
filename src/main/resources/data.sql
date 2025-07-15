@@ -1,4 +1,3 @@
-
 MERGE INTO rating (ID, NAME) KEY(ID) VALUES (1, 'G');
 MERGE INTO rating (ID, NAME) KEY(ID) VALUES (2, 'PG');
 MERGE INTO rating (ID, NAME) KEY(ID) VALUES (3, 'PG-13');
