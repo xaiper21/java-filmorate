@@ -113,12 +113,15 @@ public class FilmService {
         return true;
     }
 
-    public Collection<FilmResponseDto> getPopularFilms(int count) {
+    public Collection<FilmResponseDto> getPopularFilms(int count, Integer genreId, Integer year) {
         log.trace("Сервисный метод получение популярных фильмов");
         Map<Integer, String> allFullGenres = getMapGenres();
+        if (genreId != null && !allFullGenres.containsKey(genreId))
+            throw new NotFoundException(GenreWithId.class.getName(), genreId);
+
         Map<Long, List<Integer>> mapFilmIdAndGenreIds = filmRepository.getAllFilmGenres();
 
-        Collection<Film> result = filmRepository.getPopularFilms(count);
+        Collection<Film> result = filmRepository.getPopularFilms(count, genreId, year);
         return result.stream()
                 .map(film -> FilmMapper
                         .buildResponse(film,
@@ -131,6 +134,12 @@ public class FilmService {
                 new NotFoundException(Film.class.getName(), id));
         return FilmMapper.buildResponse(film,
                 genreRepository.findAllGenresFilm(film.getId()));
+    }
+
+    public void deleteFilm(Long id) {
+        if (!filmRepository.delete(id)) {
+            throw new NotFoundException(Film.class.getName(), id);
+        }
     }
 
     private List<GenreWithId> checkAndRemoveDuplicateAndContains(List<GenreWithId> genre,
@@ -170,5 +179,16 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
+    public Collection<FilmResponseDto> findCommonFilms(long userId, long friendId) {
+        Map<Integer, String> allFullGenres = getMapGenres();
+        Map<Long, List<Integer>> mapFilmIdAndGenreIds = filmRepository.getAllFilmGenres();
+
+        Collection<Film> commonFilms = filmRepository.findCommonFilmsByUsers(userId, friendId);
+
+        return commonFilms.stream()
+                .map(film -> FilmMapper.buildResponse(film,
+                        genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres)))
+                .collect(Collectors.toList());
+    }
 
 }

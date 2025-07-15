@@ -2,8 +2,10 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.create.FilmCreateRequestDto;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.FilmResponseDto;
@@ -51,13 +53,30 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<FilmResponseDto> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count) {
-        log.trace("Получить топ популярных фильмов");
-        return filmService.getPopularFilms(count);
+    public Collection<FilmResponseDto> getPopularFilms(@Positive @RequestParam(name = "count", defaultValue = "10") int count,
+                                                       @Positive @RequestParam(required = false) Integer genreId,
+                                                       @Positive @RequestParam(required = false) Integer year) {
+        log.trace("Получить топ популярных фильмов, Year = {}, GenreId = {}, Count = {}", year, genreId, count);
+        return filmService.getPopularFilms(count, genreId, year);
     }
 
     @GetMapping("/{id}")
     public FilmResponseDto findFilmById(@PathVariable Integer id) {
         return filmService.findFilmById(id);
+    }
+
+    @DeleteMapping("/{filmId}")
+    public ResponseEntity<Void> deleteFilm(@PathVariable Long filmId) {
+        log.trace("Контроллер удаления фильма с id {}", filmId);
+        filmService.deleteFilm(filmId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/common")
+    public Collection<FilmResponseDto> getCommonFilms(
+            @RequestParam("userId") long userId,
+            @RequestParam("friendId") long friendId) {
+        log.info("Получение общих фильмов пользователей {} и {}", userId, friendId);
+        return filmService.findCommonFilms(userId, friendId);
     }
 }

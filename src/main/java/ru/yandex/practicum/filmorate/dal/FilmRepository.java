@@ -4,7 +4,6 @@ package ru.yandex.practicum.filmorate.dal;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.catsgram.dal.BaseRepository;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
@@ -56,6 +55,35 @@ public class FilmRepository extends BaseRepository<Film> {
             "    LEFT JOIN FILM_GENRE AS FG ON f.ID = FG.FILM_ID " +
             "WHERE FG.GENRE_ID = ?";
     public static final String GET_ALL_FILM_GENRE = "SELECT film_id, genre_id FROM film_genre ORDER BY film_id";
+    private static final String DELETE_BY_ID_QUERY = "DELETE FROM film WHERE id=?";
+    private static final String FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY = "SELECT f.*, r.name AS rating_name\n" +
+            "FROM film f\n" +
+            "JOIN film_like fl ON f.id = fl.film_id\n" +
+            "JOIN rating r ON f.rating_id = r.id\n" +
+            "WHERE fl.user_id = (\n" +
+            "    SELECT user_id\n" +
+            "    FROM film_like\n" +
+            "    WHERE film_id IN (SELECT film_id FROM film_like WHERE user_id = ?)\n" +
+            "    AND user_id != ?\n" +
+            "    GROUP BY user_id\n" +
+            "    ORDER BY COUNT(*) DESC\n" +
+            "    LIMIT 1\n" +
+            ")\n" +
+            "AND f.id NOT IN (\n" +
+            "    SELECT film_id\n" +
+            "    FROM film_like\n" +
+            "    WHERE user_id = ?\n" +
+            ")";
+
+    private static final String FIND_COMMON_FILMS_BY_USERS_QUERY =
+            "SELECT f.ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.name AS rating_name " +
+                    "FROM FILM f " +
+                    "LEFT JOIN rating r ON f.rating_id = r.id " +
+                    "JOIN film_like fl1 ON f.ID = fl1.film_id AND fl1.user_id = ? " +
+                    "JOIN film_like fl2 ON f.ID = fl2.film_id AND fl2.user_id = ? " +
+                    "LEFT JOIN (SELECT film_id, COUNT(user_id) AS like_count FROM film_like GROUP BY film_id) likes " +
+                    "ON f.ID = likes.film_id " +
+                    "ORDER BY COALESCE(likes.like_count, 0) DESC";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -97,8 +125,38 @@ public class FilmRepository extends BaseRepository<Film> {
         super.delete(REMOVE_LIKE_QUERY, userId, filmId);
     }
 
-    public Collection<Film> getPopularFilms(int count) {
-        return super.findMany(FIND_POPULAR_FILM_QUERY, count);
+    public Collection<Film> getPopularFilms(int count, Integer genreId, Integer year) {
+        List<Integer> params = new ArrayList<>();
+        StringBuilder query = new StringBuilder("SELECT " +
+                "    f.ID, " +
+                "    f.NAME, " +
+                "    f.DESCRIPTION, " +
+                "    f.RELEASE_DATE, " +
+                "    f.DURATION, " +
+                "    f.RATING_ID, " +
+                "    r.name AS rating_name " +
+                "FROM " +
+                "    FILM AS f " +
+                "LEFT JOIN rating AS r ON f.rating_id = r.id " +
+                "LEFT JOIN " +
+                "    (SELECT film_id, COUNT(film_id) AS like_count FROM film_like GROUP BY film_id) AS likes " +
+                "    ON f.ID = likes.film_id ");
+        if (genreId != null) {
+            query.append("LEFT JOIN film_genre AS fg ON f.id = fg.film_id ");
+            query.append("WHERE fg.genre_id = ? ");
+            params.add(genreId);
+        }
+        if (year != null) {
+            if (genreId != null) {
+                query.append(" AND EXTRACT(YEAR FROM f.RELEASE_DATE) = ? ");
+            } else query.append(" WHERE EXTRACT(YEAR FROM f.RELEASE_DATE) = ? ");
+            params.add(year);
+        }
+        query.append("ORDER BY " +
+                "    COALESCE(likes.like_count, 0) DESC " +
+                "LIMIT ?");
+        params.add(count);
+        return super.findMany(query.toString(), params.toArray());
     }
 
     public Collection<Film> getFilmsByGenre(Integer genreId) {
@@ -115,5 +173,18 @@ public class FilmRepository extends BaseRepository<Film> {
             }
             return result;
         });
+    }
+
+    public Collection<Film> findCommonFilmsByUsers(long userId, long friendId) {
+        return super.findMany(FIND_COMMON_FILMS_BY_USERS_QUERY, userId, friendId);
+    }
+
+
+    public Collection<Film> recommendationMovies(long userId) {
+        return super.findMany(FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY, userId, userId, userId);
+    }
+
+    public boolean delete(long id) {
+        return super.delete(DELETE_BY_ID_QUERY, id);
     }
 }

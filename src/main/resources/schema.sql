@@ -55,3 +55,56 @@ CREATE TABLE  IF NOT EXISTS rating (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(10) UNIQUE NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS directors (
+         id BIGINT PRIMARY KEY AUTO_INCREMENT,
+         name VARCHAR(100) UNIQUE NOT NULL
+    );
+
+CREATE TABLE IF NOT EXISTS film_director (
+         film_id BIGINT NOT NULL,
+         director_id BIGINT NOT NULL,
+         PRIMARY KEY (film_id, director_id),
+         CONSTRAINT fk_film_director_film FOREIGN KEY (film_id) REFERENCES film(id) ON DELETE CASCADE,
+         CONSTRAINT fk_film_director_director FOREIGN KEY (director_id) REFERENCES directors(id) ON DELETE CASCADE
+    );
+-- ON DELETE CASCADE здесь важен: при удалении фильма или режиссёра
+-- соответствующая запись в этой таблице будет удалена автоматически.
+
+CREATE TABLE IF NOT EXISTS reviews (
+         id BIGINT PRIMARY KEY AUTO_INCREMENT,
+         content TEXT NOT NULL,
+         is_positive BOOLEAN NOT NULL,
+         user_id BIGINT NOT NULL,
+         film_id BIGINT NOT NULL,
+         useful INT NOT NULL DEFAULT 0,
+         CONSTRAINT fk_review_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+         CONSTRAINT fk_review_film FOREIGN KEY (film_id) REFERENCES film(id) ON DELETE CASCADE
+    );
+-- поле useful из json задачи переименовано в useful_rating во избежание конфликтов с ключевыми словами SQL.
+
+CREATE TABLE IF NOT EXISTS review_likes (
+         review_id BIGINT NOT NULL,
+         user_id BIGINT NOT NULL,
+        is_like BOOLEAN NOT NULL, -- true для лайка, false для дизлайка
+        PRIMARY KEY (review_id, user_id),
+        CONSTRAINT fk_review_like_review FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE,
+        CONSTRAINT fk_review_like_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+--Использование одного поля is_like вместо отдельных эндпоинтов для удаления лайка/дизлайка позволяет реализовать логику
+--"один пользователь — одна оценка". Если пользователь меняет лайк на дизлайк, вы просто делаете UPDATE этой записи.
+--    Удаление оценки — DELETE записи.
+
+CREATE TABLE IF NOT EXISTS events (
+          event_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+          event_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          user_id BIGINT NOT NULL,
+          event_type ENUM('LIKE', 'REVIEW', 'FRIEND') NOT NULL,
+          operation_type ENUM('REMOVE', 'ADD', 'UPDATE') NOT NULL,
+          entity_id BIGINT NOT NULL,
+          CONSTRAINT fk_event_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+--event_type и operation_type: Использование ENUM (важен ваш комментарий по этому поводу)
+--entity_id: Это идентификатор сущности, с которой связано событие (ID фильма для LIKE, ID отзыва для REVIEW,
+--ID друга для FRIEND).
+--Здесь не ставится внешний ключ, так как поле ссылается на разные таблицы в зависимости от event_type.
