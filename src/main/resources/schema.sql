@@ -1,4 +1,3 @@
-
 CREATE TABLE IF NOT EXISTS users (
              id BIGINT PRIMARY KEY AUTO_INCREMENT,
              email VARCHAR(256) UNIQUE NOT NULL,
@@ -85,8 +84,8 @@ CREATE TABLE IF NOT EXISTS reviews (
 -- поле useful из json задачи переименовано в useful_rating во избежание конфликтов с ключевыми словами SQL.
 
 CREATE TABLE IF NOT EXISTS review_likes (
-         review_id BIGINT NOT NULL,
-         user_id BIGINT NOT NULL,
+        review_id BIGINT NOT NULL,
+        user_id BIGINT NOT NULL,
         is_like BOOLEAN NOT NULL, -- true для лайка, false для дизлайка
         PRIMARY KEY (review_id, user_id),
         CONSTRAINT fk_review_like_review FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE,
@@ -97,7 +96,7 @@ CREATE TABLE IF NOT EXISTS review_likes (
 --    Удаление оценки — DELETE записи.
 
 CREATE TABLE IF NOT EXISTS events (
-          event_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+          id BIGINT PRIMARY KEY AUTO_INCREMENT,
           event_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
           user_id BIGINT NOT NULL,
           event_type ENUM('LIKE', 'REVIEW', 'FRIEND') NOT NULL,

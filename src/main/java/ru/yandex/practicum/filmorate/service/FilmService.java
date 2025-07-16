@@ -11,10 +11,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.NullObject;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.GenreMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.GenreWithId;
-import ru.yandex.practicum.filmorate.model.MpaWithId;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,7 +24,6 @@ public class FilmService {
     private final GenreRepository genreRepository;
     private final MpaRepository mpaRepository;
     private final FilmRepository filmRepository;
-    private final DirectorRepository directorRepository;
 
     public FilmResponseDto createFilm(FilmCreateRequestDto createRequestDto) {
         log.trace("Сервисный метод создания фильма");
@@ -116,6 +112,7 @@ public class FilmService {
         if (optionalUser.isEmpty()) throw new NotFoundException(User.class.getName(), userId);
 
         filmRepository.setInsertLikeQuery(userId, filmId);
+        eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.ADD);
         return null;
     }
 
@@ -126,17 +123,21 @@ public class FilmService {
 
         Optional<User> optionalUser = userRepository.findOne(userId);
         if (optionalUser.isEmpty()) throw new NotFoundException(User.class.getName(), userId);
+        eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.REMOVE);
         filmRepository.removeLikeBy(userId, filmId);
         return true;
     }
 
-    public Collection<FilmResponseDto> getPopularFilms(int count) {
+    public Collection<FilmResponseDto> getPopularFilms(int count, Integer genreId, Integer year) {
         log.trace("Сервисный метод получение популярных фильмов");
         Map<Integer, String> allFullGenres = getMapGenres();
+        if (genreId != null && !allFullGenres.containsKey(genreId))
+            throw new NotFoundException(GenreWithId.class.getName(), genreId);
+
         Map<Long, List<Integer>> mapFilmIdAndGenreIds = filmRepository.getAllFilmGenres();
         Map<Long, List<DirectorDto>> mapFilmDirectors = directorRepository.getAllFilmDirectors();
 
-        Collection<Film> result = filmRepository.getPopularFilms(count);
+        Collection<Film> result = filmRepository.getPopularFilms(count, genreId, year);
         return result.stream()
                 .map(film -> FilmMapper.buildResponse(
                         film,
@@ -149,10 +150,14 @@ public class FilmService {
     public FilmResponseDto findFilmById(Integer id) {
         Film film = filmRepository.findOne(id).orElseThrow(() ->
                 new NotFoundException(Film.class.getName(), id));
-        List<GenreWithIdAndName> genres = genreRepository.findAllGenresFilm(film.getId());
-        List<DirectorDto> directors = directorRepository.findDirectorsByFilmId(film.getId());
+        return FilmMapper.buildResponse(film,
+                genreRepository.findAllGenresFilm(film.getId()));
+    }
 
-        return FilmMapper.buildResponse(film, genres, directors);
+    public void deleteFilm(Long id) {
+        if (!filmRepository.delete(id)) {
+            throw new NotFoundException(Film.class.getName(), id);
+        }
     }
 
     private List<GenreWithId> checkAndRemoveDuplicateAndContains(List<GenreWithId> genre,
@@ -208,6 +213,17 @@ public class FilmService {
                         genFullGenresByListIds(filmGenres.get(film.getId()), allGenres),
                         filmDirectors.getOrDefault(film.getId(), Collections.emptyList())
                 ))
+                .collect(Collectors.toList());
+    }
+    public Collection<FilmResponseDto> findCommonFilms(long userId, long friendId) {
+        Map<Integer, String> allFullGenres = getMapGenres();
+        Map<Long, List<Integer>> mapFilmIdAndGenreIds = filmRepository.getAllFilmGenres();
+
+        Collection<Film> commonFilms = filmRepository.findCommonFilmsByUsers(userId, friendId);
+
+        return commonFilms.stream()
+                .map(film -> FilmMapper.buildResponse(film,
+                        genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres)))
                 .collect(Collectors.toList());
     }
 

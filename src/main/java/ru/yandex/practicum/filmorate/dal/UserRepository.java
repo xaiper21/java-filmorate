@@ -33,7 +33,23 @@ public class UserRepository extends BaseRepository<User> {
             "        SELECT FRIENDSHIP.USER_TWO_ID FROM FRIENDSHIP " +
             "        WHERE USER_ONE_ID = ? " +
             "        ))";
-
+    private static final String FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY = "SELECT f.*\n" +
+            "FROM film f\n" +
+            "JOIN film_like fl ON f.film_id = fl.film_id\n" +
+            "WHERE fl.user_id = (\n" +
+            "    SELECT user_id\n" +
+            "    FROM film_like\n" +
+            "    WHERE film_id IN (SELECT film_id FROM film_like WHERE user_id = :userId)\n" +
+            "    AND user_id != :userId\n" +
+            "    GROUP BY user_id\n" +
+            "    ORDER BY COUNT(*) DESC\n" +
+            "    LIMIT 1\n" +
+            ")\n" +
+            "AND f.film_id NOT IN (\n" +
+            "    SELECT film_id\n" +
+            "    FROM film_like\n" +
+            "    WHERE user_id = :userId\n" +
+            ")";
 
     public UserRepository(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
@@ -88,4 +104,9 @@ public class UserRepository extends BaseRepository<User> {
     public Collection<User> findAllMutualFriendsByIdUsers(Long userOneId, Long userTwoId) {
         return super.findMany(FIND_MUTUAL_FRIENDS_BY_ID_USERS, userOneId, userTwoId);
     }
+
+    public boolean deleteUser(long id) {
+        return super.delete(DELETE_BY_ID_QUERY, id);
+    }
+
 }
