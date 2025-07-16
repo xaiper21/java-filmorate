@@ -3,15 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dal.FilmRepository;
-import ru.yandex.practicum.filmorate.dal.GenreRepository;
-import ru.yandex.practicum.filmorate.dal.MpaRepository;
-import ru.yandex.practicum.filmorate.dal.UserRepository;
+import ru.yandex.practicum.filmorate.dal.*;
 import ru.yandex.practicum.filmorate.dto.create.FilmCreateRequestDto;
-import ru.yandex.practicum.filmorate.dto.dtoclasses.FilmResponseDto;
-import ru.yandex.practicum.filmorate.dto.dtoclasses.GenreWithIdAndName;
-import ru.yandex.practicum.filmorate.dto.dtoclasses.LikeResponseDto;
-import ru.yandex.practicum.filmorate.dto.dtoclasses.MpaWithIdAndName;
+import ru.yandex.practicum.filmorate.dto.dtoclasses.*;
 import ru.yandex.practicum.filmorate.dto.update.FilmUpdateDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.NullObject;
@@ -30,6 +24,7 @@ public class FilmService {
     private final GenreRepository genreRepository;
     private final MpaRepository mpaRepository;
     private final FilmRepository filmRepository;
+    private final DirectorRepository directorRepository;
     private final EventService eventService;
 
     public FilmResponseDto createFilm(FilmCreateRequestDto createRequestDto) {
@@ -43,7 +38,15 @@ public class FilmService {
         film.setId(filmRepository.save(film));
         genreRepository.insertGenresFilm(resultAdd, film.getId());
 
-        return FilmMapper.buildResponse(film, genFullGenresByList(resultAdd, allFullGenres));
+        if (createRequestDto.getDirectors() != null) {
+            directorRepository.insertDirectorsForFilm(createRequestDto.getDirectors(), film.getId());
+        }
+
+        List<DirectorDto> directors = directorRepository.findDirectorsByFilmId(film.getId());
+
+        return FilmMapper.buildResponse(film,
+                genFullGenresByList(resultAdd, allFullGenres),
+                directors);
     }
 
     private MpaWithIdAndName getFillMpaByMpaWithId(MpaWithId mpa) throws NotFoundException {
@@ -54,8 +57,12 @@ public class FilmService {
 
     public FilmResponseDto updateFilm(FilmUpdateDto request) throws NullObject, NotFoundException {
         log.trace("Сервисный метод обновление фильма");
-        Film oldFilm = filmRepository.findOne(request.getId()).orElseThrow(() ->
-                new NotFoundException(Film.class.getName(), request.getId()));
+        Film oldFilm = filmRepository.findOne(request.getId())
+                .orElseThrow(() -> new NotFoundException(Film.class.getName(), request.getId()));
+
+        if (request.getDirectors() != null) {
+            directorRepository.updateDirectorsForFilm(request.getDirectors(), oldFilm.getId());
+        }
         MpaWithIdAndName resultMpa;
         if (request.hasMpa()) {
             resultMpa = getFillMpaByMpaWithId(request.getMpa());
@@ -70,11 +77,18 @@ public class FilmService {
             resulGenres = genFullGenresByList(request.getGenres(), allFullGenres);
         } else {
             resulGenres = genreRepository.findAllGenresFilm(oldFilm.getId());
-
         }
+
+        if (request.hasDirectors()) {
+            directorRepository.updateDirectorsForFilm(request.getDirectors(), oldFilm.getId());
+        }
+
         filmRepository.updateFilm(FilmMapper.updateFields(oldFilm, request, resultMpa, resulGenres));
         genreRepository.updateGenresFilm(GenreMapper.mapToListGenreWithId(resulGenres), oldFilm.getId());
-        return FilmMapper.buildResponse(oldFilm, resulGenres);
+
+        List<DirectorDto> directors = directorRepository.findDirectorsByFilmId(oldFilm.getId());
+
+        return FilmMapper.buildResponse(oldFilm, resulGenres, directors);
     }
 
     public Collection<FilmResponseDto> findAllFilms() {
@@ -82,10 +96,13 @@ public class FilmService {
         Map<Integer, String> allFullGenres = getMapGenres();
         List<Film> resultFilms = filmRepository.findAll();
         Map<Long, List<Integer>> mapFilmIdAndGenreIds = filmRepository.getAllFilmGenres();
+        Map<Long, List<DirectorDto>> mapFilmDirectors = directorRepository.getAllFilmDirectors();
+
         return resultFilms.stream()
                 .map(film -> FilmMapper
                         .buildResponse(film,
-                                genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres)))
+                                genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres),
+                                mapFilmDirectors.getOrDefault(film.getId(), Collections.emptyList())))
                 .collect(Collectors.toList());
     }
 
@@ -120,12 +137,15 @@ public class FilmService {
             throw new NotFoundException(GenreWithId.class.getName(), genreId);
 
         Map<Long, List<Integer>> mapFilmIdAndGenreIds = filmRepository.getAllFilmGenres();
+        Map<Long, List<DirectorDto>> mapFilmDirectors = directorRepository.getAllFilmDirectors();
 
         Collection<Film> result = filmRepository.getPopularFilms(count, genreId, year);
         return result.stream()
-                .map(film -> FilmMapper
-                        .buildResponse(film,
-                                genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres)))
+                .map(film -> FilmMapper.buildResponse(
+                        film,
+                        genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres),
+                        mapFilmDirectors.getOrDefault(film.getId(), Collections.emptyList())
+                ))
                 .collect(Collectors.toList());
     }
 
@@ -133,7 +153,7 @@ public class FilmService {
         Film film = filmRepository.findOne(id).orElseThrow(() ->
                 new NotFoundException(Film.class.getName(), id));
         return FilmMapper.buildResponse(film,
-                genreRepository.findAllGenresFilm(film.getId()));
+                genreRepository.findAllGenresFilm(film.getId()), directorRepository.findDirectorsByFilmId(film.getId()));
     }
 
     public void deleteFilm(Long id) {
@@ -179,6 +199,25 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
+    public List<FilmResponseDto> getFilmsByDirector(Long directorId, String sortBy) {
+        if (!directorRepository.findById(directorId).isPresent()) {
+            throw new NotFoundException("Режиссер не найден", directorId);
+        }
+
+        List<Film> films = directorRepository.findFilmsByDirectorSorted(directorId, sortBy);
+        Map<Long, List<Integer>> filmGenres = filmRepository.getAllFilmGenres();
+        Map<Integer, String> allGenres = getMapGenres();
+        Map<Long, List<DirectorDto>> filmDirectors = directorRepository.getAllFilmDirectors();
+
+        return films.stream()
+                .map(film -> FilmMapper.buildResponse(
+                        film,
+                        genFullGenresByListIds(filmGenres.get(film.getId()), allGenres),
+                        filmDirectors.getOrDefault(film.getId(), Collections.emptyList())
+                ))
+                .collect(Collectors.toList());
+    }
+
     public Collection<FilmResponseDto> findCommonFilms(long userId, long friendId) {
         Map<Integer, String> allFullGenres = getMapGenres();
         Map<Long, List<Integer>> mapFilmIdAndGenreIds = filmRepository.getAllFilmGenres();
@@ -186,8 +225,11 @@ public class FilmService {
         Collection<Film> commonFilms = filmRepository.findCommonFilmsByUsers(userId, friendId);
 
         return commonFilms.stream()
-                .map(film -> FilmMapper.buildResponse(film,
-                        genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres)))
+                .map(film -> FilmMapper.buildResponse(
+                        film,
+                        genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres),
+                        filmRepository.findDirectorsByFilmId(film.getId())
+                ))
                 .collect(Collectors.toList());
     }
 

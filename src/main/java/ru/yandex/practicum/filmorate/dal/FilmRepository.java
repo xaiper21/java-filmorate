@@ -4,12 +4,28 @@ package ru.yandex.practicum.filmorate.dal;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dal.mappers.DirectorRowMapper;
+import ru.yandex.practicum.filmorate.dto.dtoclasses.DirectorDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
 
 @Repository
 public class FilmRepository extends BaseRepository<Film> {
+    public static final String FIND_FILM_BY_GENRE_ID = "SELECT " +
+            "    f.ID, " +
+            "    f.NAME, " +
+            "    f.DESCRIPTION, " +
+            "    f.RELEASE_DATE, " +
+            "    f.DURATION, " +
+            "    f.RATING_ID " +
+            "    r.name AS rating_name " +
+            "FROM " +
+            "    FILM AS f " +
+            "    LEFT JOIN rating AS r ON f.rating_id = r.id " +
+            "    LEFT JOIN FILM_GENRE AS FG ON f.ID = FG.FILM_ID " +
+            "WHERE FG.GENRE_ID = ?";
+    public static final String GET_ALL_FILM_GENRE = "SELECT film_id, genre_id FROM film_genre ORDER BY film_id";
     private static final String INSERT_QUERY = "INSERT INTO film (name, description, release_date, duration," +
             " rating_id)" +
             "VALUES (?, ?, ?, ?, ?)";
@@ -41,20 +57,6 @@ public class FilmRepository extends BaseRepository<Film> {
             "ORDER BY " +
             "    COALESCE(likes.like_count, 0) DESC " +
             "LIMIT ?";
-    public static final String FIND_FILM_BY_GENRE_ID = "SELECT " +
-            "    f.ID, " +
-            "    f.NAME, " +
-            "    f.DESCRIPTION, " +
-            "    f.RELEASE_DATE, " +
-            "    f.DURATION, " +
-            "    f.RATING_ID " +
-            "    r.name AS rating_name " +
-            "FROM " +
-            "    FILM AS f " +
-            "    LEFT JOIN rating AS r ON f.rating_id = r.id " +
-            "    LEFT JOIN FILM_GENRE AS FG ON f.ID = FG.FILM_ID " +
-            "WHERE FG.GENRE_ID = ?";
-    public static final String GET_ALL_FILM_GENRE = "SELECT film_id, genre_id FROM film_genre ORDER BY film_id";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM film WHERE id=?";
     private static final String FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY = "SELECT f.*, r.name AS rating_name\n" +
             "FROM film f\n" +
@@ -84,6 +86,8 @@ public class FilmRepository extends BaseRepository<Film> {
                     "LEFT JOIN (SELECT film_id, COUNT(user_id) AS like_count FROM film_like GROUP BY film_id) likes " +
                     "ON f.ID = likes.film_id " +
                     "ORDER BY COALESCE(likes.like_count, 0) DESC";
+    // FilmRepository.java
+    private static final String DELETE_DIRECTORS_FOR_FILM = "DELETE FROM film_director WHERE film_id = ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -102,11 +106,6 @@ public class FilmRepository extends BaseRepository<Film> {
     public Optional<Film> findOne(long id) {
         return super.findOne(FIND_BY_ID_QUERY, id);
     }
-/*
-    public Optional<Film> findLik(long id) {
-        String test = "SELECT created_at FROM film_like WHERE film_id = ?";
-        return super.findOne(test, id);
-    }*/
 
     public void updateFilm(Film film) {
         super.update(UPDATE_FILM_QUERY,
@@ -184,12 +183,31 @@ public class FilmRepository extends BaseRepository<Film> {
         return super.findMany(FIND_COMMON_FILMS_BY_USERS_QUERY, userId, friendId);
     }
 
-
     public Collection<Film> recommendationMovies(long userId) {
         return super.findMany(FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY, userId, userId, userId);
     }
 
     public boolean delete(long id) {
         return super.delete(DELETE_BY_ID_QUERY, id);
+    }
+
+    public void insertDirectorsForFilm(List<DirectorDto> directors, Long filmId) {
+        if (directors == null || directors.isEmpty()) {
+            return;
+        }
+        String sql = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
+        directors.forEach(director -> jdbc.update(sql, filmId, director.getId()));
+    }
+
+    public void updateDirectorsForFilm(List<DirectorDto> directors, Long filmId) {
+        jdbc.update(DELETE_DIRECTORS_FOR_FILM, filmId);
+        insertDirectorsForFilm(directors, filmId);
+    }
+
+    public List<DirectorDto> findDirectorsByFilmId(Long filmId) {
+        String sql = "SELECT d.id, d.name FROM directors d " +
+                "JOIN film_director fd ON d.id = fd.director_id " +
+                "WHERE fd.film_id = ?";
+        return jdbc.query(sql, new DirectorRowMapper(), filmId);
     }
 }

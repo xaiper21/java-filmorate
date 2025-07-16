@@ -64,20 +64,6 @@ public class EventsRepositoryTest {
                 .build();
     }
 
-    static class EventRowMapper implements RowMapper<Event> {
-        @Override
-        public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return Event.builder()
-                    .eventId(rs.getLong("event_id"))
-                    .userId(rs.getLong("user_id"))
-                    .entityId(rs.getLong("entity_id"))
-                    .eventType(EventType.valueOf(rs.getString("event_type")))
-                    .operation(OperationType.valueOf(rs.getString("operation")))
-                    .timestamp(rs.getTimestamp("timestamp"))
-                    .build();
-        }
-    }
-
     @Test
     void create_ShouldSaveEventAndReturnGeneratedId() {
         Long generatedId = eventsRepository.create(testEvent);
@@ -151,5 +137,19 @@ public class EventsRepositoryTest {
         Collection<Event> events = eventsRepository.findAll();
 
         assertThat(events).hasSize(2);
+    }
+
+    static class EventRowMapper implements RowMapper<Event> {
+        @Override
+        public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return Event.builder()
+                    .eventId(rs.getLong("event_id"))
+                    .userId(rs.getLong("user_id"))
+                    .entityId(rs.getLong("entity_id"))
+                    .eventType(EventType.valueOf(rs.getString("event_type")))
+                    .operation(OperationType.valueOf(rs.getString("operation")))
+                    .timestamp(rs.getTimestamp("timestamp"))
+                    .build();
+        }
     }
 }
