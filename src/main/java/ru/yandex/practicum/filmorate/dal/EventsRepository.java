@@ -9,8 +9,7 @@ import java.util.Collection;
 
 @Repository
 public class EventsRepository extends BaseRepository<Event> {
-    private static final String INSERT_QUERY = "" +
-            "INSERT INTO events(" +
+    private static final String INSERT_QUERY = "INSERT INTO events(" +
             "event_timestamp," +
             " user_id," +
             " event_type," +

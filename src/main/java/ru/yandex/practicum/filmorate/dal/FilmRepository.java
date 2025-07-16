@@ -12,6 +12,20 @@ import java.util.*;
 
 @Repository
 public class FilmRepository extends BaseRepository<Film> {
+    public static final String FIND_FILM_BY_GENRE_ID = "SELECT " +
+            "    f.ID, " +
+            "    f.NAME, " +
+            "    f.DESCRIPTION, " +
+            "    f.RELEASE_DATE, " +
+            "    f.DURATION, " +
+            "    f.RATING_ID " +
+            "    r.name AS rating_name " +
+            "FROM " +
+            "    FILM AS f " +
+            "    LEFT JOIN rating AS r ON f.rating_id = r.id " +
+            "    LEFT JOIN FILM_GENRE AS FG ON f.ID = FG.FILM_ID " +
+            "WHERE FG.GENRE_ID = ?";
+    public static final String GET_ALL_FILM_GENRE = "SELECT film_id, genre_id FROM film_genre ORDER BY film_id";
     private static final String INSERT_QUERY = "INSERT INTO film (name, description, release_date, duration," +
             " rating_id)" +
             "VALUES (?, ?, ?, ?, ?)";
@@ -43,20 +57,6 @@ public class FilmRepository extends BaseRepository<Film> {
             "ORDER BY " +
             "    COALESCE(likes.like_count, 0) DESC " +
             "LIMIT ?";
-    public static final String FIND_FILM_BY_GENRE_ID = "SELECT " +
-            "    f.ID, " +
-            "    f.NAME, " +
-            "    f.DESCRIPTION, " +
-            "    f.RELEASE_DATE, " +
-            "    f.DURATION, " +
-            "    f.RATING_ID " +
-            "    r.name AS rating_name " +
-            "FROM " +
-            "    FILM AS f " +
-            "    LEFT JOIN rating AS r ON f.rating_id = r.id " +
-            "    LEFT JOIN FILM_GENRE AS FG ON f.ID = FG.FILM_ID " +
-            "WHERE FG.GENRE_ID = ?";
-    public static final String GET_ALL_FILM_GENRE = "SELECT film_id, genre_id FROM film_genre ORDER BY film_id";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM film WHERE id=?";
     private static final String FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY = "SELECT f.*, r.name AS rating_name\n" +
             "FROM film f\n" +
@@ -86,6 +86,8 @@ public class FilmRepository extends BaseRepository<Film> {
                     "LEFT JOIN (SELECT film_id, COUNT(user_id) AS like_count FROM film_like GROUP BY film_id) likes " +
                     "ON f.ID = likes.film_id " +
                     "ORDER BY COALESCE(likes.like_count, 0) DESC";
+    // FilmRepository.java
+    private static final String DELETE_DIRECTORS_FOR_FILM = "DELETE FROM film_director WHERE film_id = ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -181,7 +183,6 @@ public class FilmRepository extends BaseRepository<Film> {
         return super.findMany(FIND_COMMON_FILMS_BY_USERS_QUERY, userId, friendId);
     }
 
-
     public Collection<Film> recommendationMovies(long userId) {
         return super.findMany(FIND_MUTUAL_MOVIES_BY_ID_USERS_QUERY, userId, userId, userId);
     }
@@ -189,9 +190,6 @@ public class FilmRepository extends BaseRepository<Film> {
     public boolean delete(long id) {
         return super.delete(DELETE_BY_ID_QUERY, id);
     }
-
-    // FilmRepository.java
-    private static final String DELETE_DIRECTORS_FOR_FILM = "DELETE FROM film_director WHERE film_id = ?";
 
     public void insertDirectorsForFilm(List<DirectorDto> directors, Long filmId) {
         if (directors == null || directors.isEmpty()) {

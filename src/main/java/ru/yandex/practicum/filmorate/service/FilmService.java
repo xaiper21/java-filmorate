@@ -153,7 +153,7 @@ public class FilmService {
         Film film = filmRepository.findOne(id).orElseThrow(() ->
                 new NotFoundException(Film.class.getName(), id));
         return FilmMapper.buildResponse(film,
-                genreRepository.findAllGenresFilm(film.getId()), directorRepository.findAll());
+                genreRepository.findAllGenresFilm(film.getId()), directorRepository.findDirectorsByFilmId(film.getId()));
     }
 
     public void deleteFilm(Long id) {
@@ -217,6 +217,7 @@ public class FilmService {
                 ))
                 .collect(Collectors.toList());
     }
+
     public Collection<FilmResponseDto> findCommonFilms(long userId, long friendId) {
         Map<Integer, String> allFullGenres = getMapGenres();
         Map<Long, List<Integer>> mapFilmIdAndGenreIds = filmRepository.getAllFilmGenres();
