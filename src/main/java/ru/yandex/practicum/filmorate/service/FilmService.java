@@ -233,4 +233,18 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
+    public Collection<FilmResponseDto> searchFilms(String query, List<String> by) {
+        Collection<Film> films = filmRepository.searchFilms(query, by);
+        Map<Long, List<Integer>> filmGenres = filmRepository.getAllFilmGenres();
+        Map<Integer, String> allGenres = getMapGenres();
+        Map<Long, List<DirectorDto>> filmDirectors = directorRepository.getAllFilmDirectors();
+
+        return films.stream()
+                .map(film -> FilmMapper.buildResponse(
+                        film,
+                        genFullGenresByListIds(filmGenres.get(film.getId()), allGenres),
+                        filmDirectors.getOrDefault(film.getId(), Collections.emptyList())
+                ))
+                .collect(Collectors.toList());
+    }
 }

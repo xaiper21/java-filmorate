@@ -86,7 +86,6 @@ public class FilmRepository extends BaseRepository<Film> {
                     "LEFT JOIN (SELECT film_id, COUNT(user_id) AS like_count FROM film_like GROUP BY film_id) likes " +
                     "ON f.ID = likes.film_id " +
                     "ORDER BY COALESCE(likes.like_count, 0) DESC";
-    // FilmRepository.java
     private static final String DELETE_DIRECTORS_FOR_FILM = "DELETE FROM film_director WHERE film_id = ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
@@ -209,5 +208,51 @@ public class FilmRepository extends BaseRepository<Film> {
                 "JOIN film_director fd ON d.id = fd.director_id " +
                 "WHERE fd.film_id = ?";
         return jdbc.query(sql, new DirectorRowMapper(), filmId);
+    }
+
+    public Collection<Film> searchFilms(String query, List<String> by) {
+
+        StringBuilder sql = new StringBuilder("SELECT f.ID, " +
+                "                f.NAME, " +
+                "                f.DESCRIPTION, " +
+                "                f.RELEASE_DATE, " +
+                "                f.DURATION, " +
+                "                f.RATING_ID, " +
+                "                r.name AS rating_name " +
+                "FROM film AS f " +
+                "LEFT JOIN rating AS r ON f.rating_id = r.id " +
+                "LEFT JOIN film_director AS fd ON f.id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.id " +
+                "LEFT JOIN " +
+                "    (SELECT film_id, COUNT(film_id) AS like_count FROM film_like GROUP BY film_id) AS likes " +
+                "    ON f.ID = likes.film_id ");
+
+        String searchTerm = "%" + query.toLowerCase() + "%";
+
+        List<String> whereConditions = new ArrayList<>();
+
+        List<Object> params = new ArrayList<>();
+
+
+        if (by.contains("title")) {
+            whereConditions.add("LOWER(f.name) LIKE ?");
+            params.add(searchTerm);
+        }
+        if (by.contains("director")) {
+            whereConditions.add("LOWER(d.name) LIKE ?");
+            params.add(searchTerm);
+        }
+
+        if (whereConditions.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String whereSql = " WHERE " + String.join(" OR ", whereConditions);
+
+        sql.append(whereSql);
+        sql.append(" GROUP BY f.id");
+        sql.append(" ORDER BY COALESCE(likes.like_count, 0) DESC");
+
+        return super.findMany(sql.toString(), params.toArray());
     }
 }
