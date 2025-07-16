@@ -92,5 +92,6 @@ public class FilmController {
             @RequestParam List<String> by
     ) {
         log.info("Поиск фильма с параметрами query = {} , by = {}", query, by);
-        return filmService.searchFilms(query, by);}
+        return filmService.searchFilms(query, by);
+    }
 }
