@@ -24,6 +24,8 @@ public class FilmService {
     private final GenreRepository genreRepository;
     private final MpaRepository mpaRepository;
     private final FilmRepository filmRepository;
+    private final DirectorRepository directorRepository;
+    private final EventService eventService;
 
     public FilmResponseDto createFilm(FilmCreateRequestDto createRequestDto) {
         log.trace("Сервисный метод создания фильма");
@@ -151,7 +153,7 @@ public class FilmService {
         Film film = filmRepository.findOne(id).orElseThrow(() ->
                 new NotFoundException(Film.class.getName(), id));
         return FilmMapper.buildResponse(film,
-                genreRepository.findAllGenresFilm(film.getId()));
+                genreRepository.findAllGenresFilm(film.getId()), directorRepository.findAll());
     }
 
     public void deleteFilm(Long id) {
@@ -222,8 +224,11 @@ public class FilmService {
         Collection<Film> commonFilms = filmRepository.findCommonFilmsByUsers(userId, friendId);
 
         return commonFilms.stream()
-                .map(film -> FilmMapper.buildResponse(film,
-                        genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres)))
+                .map(film -> FilmMapper.buildResponse(
+                        film,
+                        genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres),
+                        filmRepository.findDirectorsByFilmId(film.getId())
+                ))
                 .collect(Collectors.toList());
     }
 

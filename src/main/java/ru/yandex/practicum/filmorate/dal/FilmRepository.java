@@ -12,20 +12,6 @@ import java.util.*;
 
 @Repository
 public class FilmRepository extends BaseRepository<Film> {
-    public static final String FIND_FILM_BY_GENRE_ID = "SELECT " +
-            "    f.ID, " +
-            "    f.NAME, " +
-            "    f.DESCRIPTION, " +
-            "    f.RELEASE_DATE, " +
-            "    f.DURATION, " +
-            "    f.RATING_ID " +
-            "    r.name AS rating_name " +
-            "FROM " +
-            "    FILM AS f " +
-            "    LEFT JOIN rating AS r ON f.rating_id = r.id " +
-            "    LEFT JOIN FILM_GENRE AS FG ON f.ID = FG.FILM_ID " +
-            "WHERE FG.GENRE_ID = ?";
-    public static final String GET_ALL_FILM_GENRE = "SELECT film_id, genre_id FROM film_genre ORDER BY film_id";
     private static final String INSERT_QUERY = "INSERT INTO film (name, description, release_date, duration," +
             " rating_id)" +
             "VALUES (?, ?, ?, ?, ?)";

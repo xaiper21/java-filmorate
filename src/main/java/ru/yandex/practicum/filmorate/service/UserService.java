@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.DirectorRepository;
 import ru.yandex.practicum.filmorate.dal.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.GenreRepository;
 import ru.yandex.practicum.filmorate.dal.UserRepository;
@@ -30,6 +31,7 @@ public class UserService {
     private final FilmRepository filmRepository;
     private final GenreRepository genreRepository;
     private final EventService eventService;
+    private final DirectorRepository directorRepository;
 
     public UserDto create(UserDto userDto) {
         log.trace("Сервисный метод добавление пользователя");
@@ -96,7 +98,7 @@ public class UserService {
         return filmRepository.recommendationMovies(id)
                 .stream()
                 .map(film -> {
-                    return FilmMapper.buildResponse(film, genreRepository.findAllGenresFilm(film.getId()));
+                    return FilmMapper.buildResponse(film, genreRepository.findAllGenresFilm(film.getId()), directorRepository.findAll());
                 })
                 .collect(Collectors.toList());
     }
