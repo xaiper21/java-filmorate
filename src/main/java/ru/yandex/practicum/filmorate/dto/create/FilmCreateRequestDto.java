@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.annotation.DateNoEarlierThan;
+import ru.yandex.practicum.filmorate.dto.dtoclasses.DirectorDto;
 import ru.yandex.practicum.filmorate.model.GenreWithId;
 import ru.yandex.practicum.filmorate.model.MpaWithId;
 
@@ -26,4 +27,6 @@ public class FilmCreateRequestDto {
     private Integer duration;
     private MpaWithId mpa;
     private List<GenreWithId> genres;
+    private List<DirectorDto> directors;
+
 }

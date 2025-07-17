@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.dto.update.FilmUpdateDto;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
@@ -65,6 +66,11 @@ public class FilmController {
         return filmService.findFilmById(id);
     }
 
+    @GetMapping("/director/{directorId}")
+    public List<FilmResponseDto> getFilmsByDirector(@PathVariable Long directorId, @RequestParam(required = false, defaultValue = "likes") String sortBy) {
+        return filmService.getFilmsByDirector(directorId, sortBy);
+    }
+
     @DeleteMapping("/{filmId}")
     public ResponseEntity<Void> deleteFilm(@PathVariable Long filmId) {
         log.trace("Контроллер удаления фильма с id {}", filmId);
@@ -78,5 +84,14 @@ public class FilmController {
             @RequestParam("friendId") long friendId) {
         log.info("Получение общих фильмов пользователей {} и {}", userId, friendId);
         return filmService.findCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/search")
+    public Collection<FilmResponseDto> searchFilms(
+            @RequestParam String query,
+            @RequestParam List<String> by
+    ) {
+        log.info("Поиск фильма с параметрами query = {} , by = {}", query, by);
+        return filmService.searchFilms(query, by);
     }
 }

@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.FilmResponseDto;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.UserDto;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
@@ -18,6 +20,7 @@ import java.util.Collection;
 @AllArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final EventService eventService;
 
     @PostMapping
     public UserDto create(@Valid @NonNull @RequestBody UserDto user) {
@@ -77,5 +80,15 @@ public class UserController {
     public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
         UserDto userDto = userService.findById(id);
         return ResponseEntity.ok(userDto);
+    }
+
+    @GetMapping("/{id}/feed")
+    public Collection<Event> findAllByUserId(@PathVariable long id) {
+        return eventService.findAllByUserId(id);
+    }
+
+    @GetMapping("//feed")
+    public Collection<Event> findAllEvents() {
+        return eventService.findAll();
     }
 }

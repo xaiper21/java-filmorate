@@ -14,4 +14,5 @@ public class FilmResponseDto {
     private Integer duration;
     private MpaWithIdAndName mpa;
     private List<GenreWithIdAndName> genres;
+    private List<DirectorDto> directors;
 }
