@@ -86,5 +86,4 @@ class FilmRepositoryTest {
         assertTrue(sql.contains("JOIN film_like fl1 ON"));
         assertTrue(sql.contains("JOIN film_like fl2 ON"));
     }
-
 }

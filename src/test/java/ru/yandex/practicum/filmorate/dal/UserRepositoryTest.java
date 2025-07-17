@@ -86,5 +86,4 @@ class UserRepositoryTest {
         assertTrue(jdbcTemplate.lastSql.toLowerCase().contains("delete"));
         assertEquals(existingUserId, jdbcTemplate.lastParams[0]);
     }
-
 }
