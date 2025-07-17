@@ -60,9 +60,13 @@ public class FilmService {
         Film oldFilm = filmRepository.findOne(request.getId())
                 .orElseThrow(() -> new NotFoundException(Film.class.getName(), request.getId()));
 
-        if (request.getDirectors() != null) {
-            directorRepository.updateDirectorsForFilm(request.getDirectors(), oldFilm.getId());
-        }
+        List<DirectorDto> directors = request.getDirectors() != null ?
+                request.getDirectors() :
+                Collections.emptyList();
+
+        directorRepository.updateDirectorsForFilm(directors, oldFilm.getId());
+        filmRepository.updateDirectorsForFilm(directors, oldFilm.getId());
+
         MpaWithIdAndName resultMpa;
         if (request.hasMpa()) {
             resultMpa = getFillMpaByMpaWithId(request.getMpa());
@@ -79,14 +83,8 @@ public class FilmService {
             resulGenres = genreRepository.findAllGenresFilm(oldFilm.getId());
         }
 
-        if (request.hasDirectors()) {
-            directorRepository.updateDirectorsForFilm(request.getDirectors(), oldFilm.getId());
-        }
-
         filmRepository.updateFilm(FilmMapper.updateFields(oldFilm, request, resultMpa, resulGenres));
         genreRepository.updateGenresFilm(GenreMapper.mapToListGenreWithId(resulGenres), oldFilm.getId());
-
-        List<DirectorDto> directors = directorRepository.findDirectorsByFilmId(oldFilm.getId());
 
         return FilmMapper.buildResponse(oldFilm, resulGenres, directors);
     }

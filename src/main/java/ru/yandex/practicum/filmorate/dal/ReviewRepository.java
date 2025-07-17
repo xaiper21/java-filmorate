@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 public class ReviewRepository extends BaseRepository<Review> {
-    private static final String FIND_ALL_QUERY = "SELECT * FROM reviews";
+    private static final String FIND_ALL_QUERY = "SELECT * FROM reviews ORDER BY useful DESC";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM reviews WHERE id=?";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM reviews WHERE id=?";
     private static final String INSERT_QUERY = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
