@@ -74,13 +74,13 @@ public class FilmService {
             resultMpa = oldFilm.getMpa();
         }
 
-        List<GenreWithIdAndName> resulGenres;
+        List<GenreWithIdAndName> resulGenres = List.of();
         if (request.hasGenres()) {
             Map<Integer, String> allFullGenres = getMapGenres();
-            request.setGenres(checkAndRemoveDuplicateAndContains(request.getGenres(), allFullGenres));
-            resulGenres = genFullGenresByList(request.getGenres(), allFullGenres);
-        } else {
-            resulGenres = genreRepository.findAllGenresFilm(oldFilm.getId());
+            List<GenreWithId> checkedGenres = checkAndRemoveDuplicateAndContains(request.getGenres(), allFullGenres);
+            genreRepository.updateGenresFilm(checkedGenres, oldFilm.getId());
+            // Обновляем поле в самом объекте, чтобы вернуть актуальный ответ
+             resulGenres = genFullGenresByList(checkedGenres, allFullGenres);
         }
 
         filmRepository.updateFilm(FilmMapper.updateFields(oldFilm, request, resultMpa, resulGenres));
@@ -88,6 +88,7 @@ public class FilmService {
 
         return FilmMapper.buildResponse(oldFilm, resulGenres, directors);
     }
+    
 
     public Collection<FilmResponseDto> findAllFilms() {
         log.trace("Сервисный метод получение фильмов");
@@ -105,7 +106,7 @@ public class FilmService {
 
         filmRepository.setInsertLikeQuery(userId, filmId);
         eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.ADD);
-        return null;
+        return new LikeResponseDto();
     }
 
     public boolean deleteLikeFilm(long filmId, long userId) {

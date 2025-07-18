@@ -18,7 +18,7 @@ public class FilmRepository extends BaseRepository<Film> {
             "    f.DESCRIPTION, " +
             "    f.RELEASE_DATE, " +
             "    f.DURATION, " +
-            "    f.RATING_ID " +
+            "    f.RATING_ID, " +
             "    r.name AS rating_name " +
             "FROM " +
             "    FILM AS f " +
@@ -155,6 +155,7 @@ public class FilmRepository extends BaseRepository<Film> {
             } else query.append(" WHERE EXTRACT(YEAR FROM f.RELEASE_DATE) = ? ");
             params.add(year);
         }
+        query.append("GROUP BY f.id ");
         query.append("ORDER BY " +
                 "    COALESCE(likes.like_count, 0) DESC " +
                 "LIMIT ?");
@@ -235,11 +236,11 @@ public class FilmRepository extends BaseRepository<Film> {
 
 
         if (by.contains("title")) {
-            whereConditions.add("LOWER(f.name) LIKE ?");
+            whereConditions.add("LOWER(f.name) ILIKE ?");
             params.add(searchTerm);
         }
         if (by.contains("director")) {
-            whereConditions.add("LOWER(d.name) LIKE ?");
+            whereConditions.add("LOWER(d.name) ILIKE ?");
             params.add(searchTerm);
         }
 
