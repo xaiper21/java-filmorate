@@ -91,17 +91,9 @@ public class FilmService {
 
     public Collection<FilmResponseDto> findAllFilms() {
         log.trace("Сервисный метод получение фильмов");
-        Map<Integer, String> allFullGenres = getMapGenres();
-        List<Film> resultFilms = filmRepository.findAll();
-        Map<Long, List<Integer>> mapFilmIdAndGenreIds = filmRepository.getAllFilmGenres();
-        Map<Long, List<DirectorDto>> mapFilmDirectors = directorRepository.getAllFilmDirectors();
 
-        return resultFilms.stream()
-                .map(film -> FilmMapper
-                        .buildResponse(film,
-                                genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres),
-                                mapFilmDirectors.getOrDefault(film.getId(), Collections.emptyList())))
-                .collect(Collectors.toList());
+        List<Film> resultFilms = filmRepository.findAll();
+        return buildResponseFilms(resultFilms);
     }
 
     public LikeResponseDto likeFilm(long filmId, long userId) throws NotFoundException {
@@ -134,17 +126,8 @@ public class FilmService {
         if (genreId != null && !allFullGenres.containsKey(genreId))
             throw new NotFoundException(GenreWithId.class.getName(), genreId);
 
-        Map<Long, List<Integer>> mapFilmIdAndGenreIds = filmRepository.getAllFilmGenres();
-        Map<Long, List<DirectorDto>> mapFilmDirectors = directorRepository.getAllFilmDirectors();
-
         Collection<Film> result = filmRepository.getPopularFilms(count, genreId, year);
-        return result.stream()
-                .map(film -> FilmMapper.buildResponse(
-                        film,
-                        genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres),
-                        mapFilmDirectors.getOrDefault(film.getId(), Collections.emptyList())
-                ))
-                .collect(Collectors.toList());
+        return buildResponseFilms(result);
     }
 
     public FilmResponseDto findFilmById(Integer id) {
@@ -203,40 +186,23 @@ public class FilmService {
         }
 
         List<Film> films = directorRepository.findFilmsByDirectorSorted(directorId, sortBy);
-        Map<Long, List<Integer>> filmGenres = filmRepository.getAllFilmGenres();
-        Map<Integer, String> allGenres = getMapGenres();
-        Map<Long, List<DirectorDto>> filmDirectors = directorRepository.getAllFilmDirectors();
-
-        return films.stream()
-                .map(film -> FilmMapper.buildResponse(
-                        film,
-                        genFullGenresByListIds(filmGenres.get(film.getId()), allGenres),
-                        filmDirectors.getOrDefault(film.getId(), Collections.emptyList())
-                ))
-                .collect(Collectors.toList());
+        return buildResponseFilms(films).stream().toList();
     }
 
     public Collection<FilmResponseDto> findCommonFilms(long userId, long friendId) {
-        Map<Integer, String> allFullGenres = getMapGenres();
-        Map<Long, List<Integer>> mapFilmIdAndGenreIds = filmRepository.getAllFilmGenres();
-
         Collection<Film> commonFilms = filmRepository.findCommonFilmsByUsers(userId, friendId);
-
-        return commonFilms.stream()
-                .map(film -> FilmMapper.buildResponse(
-                        film,
-                        genFullGenresByListIds(mapFilmIdAndGenreIds.get(film.getId()), allFullGenres),
-                        filmRepository.findDirectorsByFilmId(film.getId())
-                ))
-                .collect(Collectors.toList());
+        return buildResponseFilms(commonFilms);
     }
 
     public Collection<FilmResponseDto> searchFilms(String query, List<String> by) {
         Collection<Film> films = filmRepository.searchFilms(query, by);
+        return  buildResponseFilms(films);
+    }
+
+    private Collection<FilmResponseDto> buildResponseFilms(Collection<Film> films) {
         Map<Long, List<Integer>> filmGenres = filmRepository.getAllFilmGenres();
         Map<Integer, String> allGenres = getMapGenres();
         Map<Long, List<DirectorDto>> filmDirectors = directorRepository.getAllFilmDirectors();
-
         return films.stream()
                 .map(film -> FilmMapper.buildResponse(
                         film,
