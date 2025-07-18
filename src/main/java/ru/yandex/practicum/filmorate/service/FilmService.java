@@ -80,7 +80,7 @@ public class FilmService {
             List<GenreWithId> checkedGenres = checkAndRemoveDuplicateAndContains(request.getGenres(), allFullGenres);
             genreRepository.updateGenresFilm(checkedGenres, oldFilm.getId());
             // Обновляем поле в самом объекте, чтобы вернуть актуальный ответ
-             resulGenres = genFullGenresByList(checkedGenres, allFullGenres);
+            resulGenres = genFullGenresByList(checkedGenres, allFullGenres);
         }
 
         filmRepository.updateFilm(FilmMapper.updateFields(oldFilm, request, resultMpa, resulGenres));
@@ -88,7 +88,7 @@ public class FilmService {
 
         return FilmMapper.buildResponse(oldFilm, resulGenres, directors);
     }
-    
+
 
     public Collection<FilmResponseDto> findAllFilms() {
         log.trace("Сервисный метод получение фильмов");
@@ -197,7 +197,7 @@ public class FilmService {
 
     public Collection<FilmResponseDto> searchFilms(String query, List<String> by) {
         Collection<Film> films = filmRepository.searchFilms(query, by);
-        return  buildResponseFilms(films);
+        return buildResponseFilms(films);
     }
 
     private Collection<FilmResponseDto> buildResponseFilms(Collection<Film> films) {
