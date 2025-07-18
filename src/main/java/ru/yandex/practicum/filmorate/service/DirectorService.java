@@ -24,10 +24,12 @@ public class DirectorService {
     }
 
     public DirectorDto addDirector(DirectorDto director) {
+        validateDirectorName(director.getName());
         return directorRepository.save(director);
     }
 
     public DirectorDto updateDirector(DirectorDto director) {
+        validateDirectorName(director.getName());
         getDirectorById(director.getId());
         return directorRepository.update(director);
     }
@@ -40,5 +42,11 @@ public class DirectorService {
     public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
         getDirectorById(directorId);
         return directorRepository.findFilmsByDirectorSorted(directorId, sortBy);
+    }
+
+    private void validateDirectorName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Имя режиссера не может быть пустым");
+        }
     }
 }
