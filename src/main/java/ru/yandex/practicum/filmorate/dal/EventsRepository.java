@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dal;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -7,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.Event;
 
 import java.util.Collection;
 
+@Slf4j
 @Repository
 public class EventsRepository extends BaseRepository<Event> {
     private static final String INSERT_QUERY = "INSERT INTO events(" +
@@ -39,6 +41,7 @@ public class EventsRepository extends BaseRepository<Event> {
     }
 
     public Collection<Event> findAllByUserId(long userId) {
+        log.info("Запрос по нахождению всех пользователей по Id = " + userId);
         return super.findMany(FIND_ALL_EVENTS_BY_USER_ID_QUERY, userId);
     }
 

@@ -38,4 +38,11 @@ public class HandlerError {
         log.error(e.getMessage(), e);
         return new ErrorResponse("Возникла какая-то ошибка");
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalArgument(IllegalArgumentException e) {
+        log.warn("Ошибка валидации: {}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
 }

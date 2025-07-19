@@ -48,7 +48,7 @@ public class ReviewService {
         existingReview.setIsPositive(reviewDto.getIsPositive());
 
         reviewRepository.update(existingReview);
-        eventService.createEvent(reviewDto.getUserId(), reviewDto.getReviewId(), EventType.REVIEW, OperationType.UPDATE);
+        eventService.createEvent(existingReview.getUserId(), reviewDto.getReviewId(), EventType.REVIEW, OperationType.UPDATE);
         return ReviewMapper.toDto(existingReview);
     }
 
@@ -56,6 +56,7 @@ public class ReviewService {
         log.info("Удаление отзыва с ID {}", id);
         getReviewOrThrow(id);
         eventService.createEvent(getReviewById(id).getUserId(), id, EventType.REVIEW, OperationType.REMOVE);
+        log.info("deleteReview userId = {}, reviewId={}, EventType.REVIEW, OperationType.ADD", getReviewById(id).getUserId(), id);
         reviewRepository.delete(id);
     }
 
@@ -93,6 +94,8 @@ public class ReviewService {
 
         reviewLikeRepository.addLike(like);
         updateReviewUsefulRating(reviewId);
+        eventService.createEvent(userId, reviewId, EventType.REVIEW, OperationType.ADD);
+        log.info("addLikeToReview userId = {}, reviewId={}, EventType.REVIEW, OperationType.ADD", userId, reviewId);
     }
 
     public void removeLikeFromReview(long reviewId, long userId) {
@@ -102,6 +105,8 @@ public class ReviewService {
 
         reviewLikeRepository.removeLike(reviewId, userId);
         updateReviewUsefulRating(reviewId);
+        log.info("removeLikeFromReview userId = {}, reviewId={}, EventType.LIKE, OperationType.UPDATE", userId, reviewId);
+        eventService.createEvent(userId, reviewId, EventType.LIKE, OperationType.UPDATE);
     }
 
     private Review getReviewOrThrow(long id) {
