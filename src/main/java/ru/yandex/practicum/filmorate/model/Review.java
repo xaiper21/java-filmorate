@@ -19,4 +19,3 @@ public class Review {
     private Long filmId;
     private Integer useful = 0;
 }
-// Ревью полностью правильные, осталось немного доделать directors

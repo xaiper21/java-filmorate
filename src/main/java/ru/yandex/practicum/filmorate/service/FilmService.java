@@ -106,7 +106,7 @@ public class FilmService {
 
         filmRepository.setInsertLikeQuery(userId, filmId);
         eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.ADD);
-        return new LikeResponseDto();
+        return new LikeResponseDto(filmId, userId);
     }
 
     public boolean deleteLikeFilm(long filmId, long userId) {
