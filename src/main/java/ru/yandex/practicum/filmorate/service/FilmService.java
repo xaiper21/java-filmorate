@@ -98,16 +98,16 @@ public class FilmService {
     }
 
     public LikeResponseDto likeFilm(long filmId, long userId) throws NotFoundException {
-        log.trace("Сервисный метод добавления лайков");
         Film film = filmRepository.findOne(filmId).orElseThrow(() ->
                 new NotFoundException(Film.class.getName(), filmId));
-        Optional<User> optionalUser = userRepository.findOne(userId);
-        if (optionalUser.isEmpty()) throw new NotFoundException(User.class.getName(), userId);
-
-        if (filmRepository.setInsertLikeQuery(userId, filmId)) {
+        if (userRepository.findOne(userId).isEmpty()) {
+            throw new NotFoundException(User.class.getName(), userId);
+        }
+        boolean alreadyLiked = filmRepository.existsLike(userId, filmId);
+        if (!alreadyLiked) {
+            filmRepository.setInsertLikeQuery(userId, filmId);
             eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.ADD);
         }
-
         return new LikeResponseDto(filmId, userId);
     }
 
@@ -214,4 +214,5 @@ public class FilmService {
                 ))
                 .collect(Collectors.toList());
     }
+    //
 }

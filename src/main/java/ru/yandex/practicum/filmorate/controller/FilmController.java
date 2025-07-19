@@ -43,7 +43,7 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public LikeResponseDto likeFilm(@PathVariable("id") long filmId, @PathVariable long userId) {
-        log.trace("Добавление лайка фильму");
+        log.info("Добавление лайка фильму filmId={}, userId={}", filmId, userId);
         return filmService.likeFilm(filmId, userId);
     }
 

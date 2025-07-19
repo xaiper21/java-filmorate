@@ -43,7 +43,7 @@ public class ReviewController {
 
     @GetMapping
     public List<ReviewDto> getReviews(@RequestParam(required = false) Long filmId, @RequestParam(defaultValue = "10") int count) {
-        log.info("Получение отзывов");
+        log.info("Получение отзывов filmId = {}, count = {}", filmId, count);
         return reviewService.getReviewsForFilm(filmId, count);
     }
 
@@ -70,4 +70,4 @@ public class ReviewController {
         log.info("DELETE /reviews/{}/dislike/{} - Удаление дизлайка отзыву", id, userId);
         reviewService.removeLikeFromReview(id, userId);
     }
-} // Все постман тесты прошли
+}

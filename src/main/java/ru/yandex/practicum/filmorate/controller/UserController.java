@@ -84,10 +84,11 @@ public class UserController {
 
     @GetMapping("/{id}/feed")
     public Collection<Event> findAllByUserId(@PathVariable long id) {
+        log.info("Лента событий пользователя с id {}", id);
         return eventService.findAllByUserId(id);
     }
 
-    @GetMapping("//feed")
+    @GetMapping("/feed")
     public Collection<Event> findAllEvents() {
         return eventService.findAll();
     }

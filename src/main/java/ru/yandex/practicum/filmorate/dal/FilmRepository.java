@@ -88,6 +88,8 @@ public class FilmRepository extends BaseRepository<Film> {
                     "ORDER BY COALESCE(likes.like_count, 0) DESC";
     private static final String DELETE_DIRECTORS_FOR_FILM = "DELETE FROM film_director WHERE film_id = ?";
 
+    private static final String INSERT_OR_IGNORE_LIKE_QUERY = "MERGE INTO film_like (user_id, film_id) KEY (user_id, film_id) VALUES (?, ?)";
+
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
     }
@@ -121,7 +123,7 @@ public class FilmRepository extends BaseRepository<Film> {
     }
 
     public boolean setInsertLikeQuery(Long userId, Long filmId) {
-        return super.update(INSERT_LIKE_QUERY, userId, filmId);
+        return jdbc.update(INSERT_OR_IGNORE_LIKE_QUERY, userId, filmId) > 0;
     }
 
     public void removeLikeBy(Long userId, Long filmId) {
@@ -255,5 +257,11 @@ public class FilmRepository extends BaseRepository<Film> {
         sql.append(" ORDER BY COALESCE(likes.like_count, 0) DESC");
 
         return super.findMany(sql.toString(), params.toArray());
+    }
+
+    public boolean existsLike(Long userId, Long filmId) {
+        String sql = "SELECT COUNT(*) FROM film_like WHERE user_id = ? AND film_id = ?";
+        Integer count = jdbc.queryForObject(sql, Integer.class, userId, filmId);
+        return count != null && count > 0;
     }
 }
