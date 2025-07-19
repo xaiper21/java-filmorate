@@ -104,8 +104,10 @@ public class FilmService {
         Optional<User> optionalUser = userRepository.findOne(userId);
         if (optionalUser.isEmpty()) throw new NotFoundException(User.class.getName(), userId);
 
-        filmRepository.setInsertLikeQuery(userId, filmId);
-        eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.ADD);
+        if (filmRepository.setInsertLikeQuery(userId, filmId)) {
+            eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.ADD);
+        }
+
         return new LikeResponseDto(filmId, userId);
     }
 

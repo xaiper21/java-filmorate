@@ -120,8 +120,8 @@ public class FilmRepository extends BaseRepository<Film> {
         return super.findMany(FIND_ALL_QUERY);
     }
 
-    public void setInsertLikeQuery(Long userId, Long filmId) {
-        jdbc.update(INSERT_LIKE_QUERY, userId, filmId);
+    public boolean setInsertLikeQuery(Long userId, Long filmId) {
+        return super.update(INSERT_LIKE_QUERY, userId, filmId);
     }
 
     public void removeLikeBy(Long userId, Long filmId) {
