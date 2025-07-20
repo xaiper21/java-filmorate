@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.EventsRepository;
+import ru.yandex.practicum.filmorate.dal.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
@@ -18,6 +19,7 @@ import java.util.Collection;
 @AllArgsConstructor
 public class EventService {
     private final EventsRepository eventsRepository;
+    private final UserRepository userRepository;
 
     public long createEvent(long userId, long entityId, EventType eventType, OperationType operationType) {
         log.info("Создание Event userId= {}, entityId= {}, eventType= {}", userId, entityId, eventType);
@@ -35,6 +37,9 @@ public class EventService {
     }
 
     public Collection<Event> findAllByUserId(long userId) {
+        if (userRepository.findOne(userId).isEmpty()) {
+            throw new NotFoundException("Пользователь с id {} не найден", userId);
+        }
         log.info("Находим всех пользователей по Id = {}", userId);
         Collection<Event> events = eventsRepository.findAllByUserId(userId);
         log.info("EventService Коллекция пользователей events = {}", events);

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.create.FilmCreateRequestDto;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.FilmResponseDto;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequestMapping("/films")
 @Slf4j
 @AllArgsConstructor
+@Validated
 public class FilmController {
     private final FilmService filmService;
 

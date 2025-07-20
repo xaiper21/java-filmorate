@@ -100,9 +100,7 @@ public class FilmService {
     public LikeResponseDto likeFilm(long filmId, long userId) throws NotFoundException {
         Film film = filmRepository.findOne(filmId).orElseThrow(() ->
                 new NotFoundException(Film.class.getName(), filmId));
-        if (userRepository.findOne(userId).isEmpty()) {
-            throw new NotFoundException(User.class.getName(), userId);
-        }
+        checkUserExists(userId);
         boolean alreadyLiked = filmRepository.existsLike(userId, filmId);
         if (!alreadyLiked) {
             filmRepository.setInsertLikeQuery(userId, filmId);
@@ -156,6 +154,8 @@ public class FilmService {
     }
 
     public Collection<FilmResponseDto> findCommonFilms(long userId, long friendId) {
+        checkUserExists(userId);
+        checkUserExists(friendId);
         Collection<Film> commonFilms = filmRepository.findCommonFilmsByUsers(userId, friendId);
         return buildResponseFilms(commonFilms);
     }
@@ -214,5 +214,10 @@ public class FilmService {
                 ))
                 .collect(Collectors.toList());
     }
-    //
+
+    private void checkUserExists(long userId) {
+        if (userRepository.findOne(userId).isEmpty()) {
+            throw new NotFoundException(User.class.getName(), userId);
+        }
+    }
 }
