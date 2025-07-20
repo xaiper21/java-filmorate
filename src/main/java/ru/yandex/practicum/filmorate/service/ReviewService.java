@@ -37,9 +37,39 @@ public class ReviewService {
 
         Review review = ReviewMapper.toReviewFromDto(createReviewDto);
         review = reviewRepository.save(review);
-        eventService.createEvent(createReviewDto.getUserId(), review.getReviewId(), EventType.REVIEW, OperationType.ADD);
+
+        var exist = reviewRepository.findByUserId(createReviewDto.getUserId());
+
+        log.info("Сохраняем отзыв в БД с параметрами reviewId= {}, content={}, isPositive={}, userId={}, filmId={}, useful={}",
+                review.getReviewId(), review.getContent(), review.getIsPositive(), review.getUserId(), review.getFilmId());
+
+        if (exist.size() == 1) {
+            eventService.createEvent(createReviewDto.getUserId(), review.getReviewId(), EventType.REVIEW, OperationType.ADD);
+        }
+
         return ReviewMapper.toDto(review);
     }
+
+//    public ReviewDto createReview(CreateReviewDto createReviewDto) {
+//        log.info("Создание отзыва для фильма с ID {}", createReviewDto.getFilmId());
+//        checkUserExists(createReviewDto.getUserId());
+//        checkFilmExists(createReviewDto.getFilmId());
+//
+//        // Проверяем, есть ли уже отзыв от этого пользователя для этого фильма
+//        Optional<Review> existingReviewOpt = reviewRepository.findByFilmIdAndUserId(createReviewDto.getFilmId(), createReviewDto.getUserId());
+//
+//        if (existingReviewOpt.isPresent()) {
+//            // Можно выбросить исключение или вернуть ошибку
+//            throw new IllegalStateException("Пользователь уже оставил отзыв для этого фильма");
+//        }
+//
+//        Review review = ReviewMapper.toReviewFromDto(createReviewDto);
+//        review = reviewRepository.save(review);
+//        log.info("Сохраняем отзыв в БД с параметрами reviewId= {}, content={}, isPositive={}, userId={}, filmId={}, useful={}",
+//                review.getReviewId(), review.getContent(), review.getIsPositive(), review.getUserId(), review.getFilmId());
+//        eventService.createEvent(createReviewDto.getUserId(), review.getReviewId(), EventType.REVIEW, OperationType.ADD);
+//        return ReviewMapper.toDto(review);
+//    }
 
     public ReviewDto updateReview(ReviewDto reviewDto) {
         Review existingReview = getReviewOrThrow(reviewDto.getReviewId());

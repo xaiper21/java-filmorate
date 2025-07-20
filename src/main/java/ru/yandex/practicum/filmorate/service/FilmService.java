@@ -106,8 +106,8 @@ public class FilmService {
         boolean alreadyLiked = filmRepository.existsLike(userId, filmId);
         if (!alreadyLiked) {
             filmRepository.setInsertLikeQuery(userId, filmId);
-            eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.ADD);
         }
+        eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.ADD);
         return new LikeResponseDto(filmId, userId);
     }
 
