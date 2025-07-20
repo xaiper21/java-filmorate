@@ -95,8 +95,6 @@ public class ReviewService {
 
         reviewLikeRepository.addLike(like);
         updateReviewUsefulRating(reviewId);
-        eventService.createEvent(userId, reviewId, EventType.REVIEW, OperationType.ADD);
-        log.info("addLikeToReview userId = {}, reviewId={}, EventType.REVIEW, OperationType.ADD", userId, reviewId);
     }
 
     public void removeLikeFromReview(long reviewId, long userId) {
