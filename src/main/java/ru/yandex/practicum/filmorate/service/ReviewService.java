@@ -132,7 +132,6 @@ public class ReviewService {
         int likesCount = reviewLikeRepository.countLikes(reviewId);
         int dislikesCount = reviewLikeRepository.countDislikes(reviewId);
         int usefulRating = likesCount - dislikesCount;
-
         reviewRepository.updateUsefulRating(reviewId, usefulRating);
     }
 }
