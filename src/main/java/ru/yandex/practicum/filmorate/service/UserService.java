@@ -103,15 +103,6 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    private void checkNameAndSet(User user) {
-        if (user.getName() == null || user.getName().isBlank()) user.setName(user.getLogin());
-    }
-
-    private void containsUser(long id) {
-        Optional<User> user = userRepository.findOne(id);
-        if (user.isEmpty()) throw new NotFoundException(User.class.getSimpleName(), id);
-    }
-
     public UserDto findById(Long id) {
         Optional<User> userOpt = userRepository.findOne(id);
         return userOpt.map(UserMapper::mapToUserDto)
@@ -122,5 +113,14 @@ public class UserService {
         if (!userRepository.delete(id)) {
             throw new NotFoundException(User.class.getSimpleName(), id);
         }
+    }
+
+    private void checkNameAndSet(User user) {
+        if (user.getName() == null || user.getName().isBlank()) user.setName(user.getLogin());
+    }
+
+    private void containsUser(long id) {
+        Optional<User> user = userRepository.findOne(id);
+        if (user.isEmpty()) throw new NotFoundException(User.class.getSimpleName(), id);
     }
 }

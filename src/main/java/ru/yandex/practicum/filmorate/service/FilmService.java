@@ -106,8 +106,8 @@ public class FilmService {
         boolean alreadyLiked = filmRepository.existsLike(userId, filmId);
         if (!alreadyLiked) {
             filmRepository.setInsertLikeQuery(userId, filmId);
-            eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.ADD);
         }
+        eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.ADD);
         return new LikeResponseDto(filmId, userId);
     }
 
@@ -118,8 +118,8 @@ public class FilmService {
 
         Optional<User> optionalUser = userRepository.findOne(userId);
         if (optionalUser.isEmpty()) throw new NotFoundException(User.class.getName(), userId);
-        eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.REMOVE);
         filmRepository.removeLikeBy(userId, filmId);
+        eventService.createEvent(userId, filmId, EventType.LIKE, OperationType.REMOVE);
         return true;
     }
 
@@ -144,6 +144,25 @@ public class FilmService {
         if (!filmRepository.delete(id)) {
             throw new NotFoundException(Film.class.getName(), id);
         }
+    }
+
+    public List<FilmResponseDto> getFilmsByDirector(Long directorId, String sortBy) {
+        if (!directorRepository.findById(directorId).isPresent()) {
+            throw new NotFoundException("Режиссер не найден", directorId);
+        }
+
+        List<Film> films = directorRepository.findFilmsByDirectorSorted(directorId, sortBy);
+        return buildResponseFilms(films).stream().toList();
+    }
+
+    public Collection<FilmResponseDto> findCommonFilms(long userId, long friendId) {
+        Collection<Film> commonFilms = filmRepository.findCommonFilmsByUsers(userId, friendId);
+        return buildResponseFilms(commonFilms);
+    }
+
+    public Collection<FilmResponseDto> searchFilms(String query, List<String> by) {
+        Collection<Film> films = filmRepository.searchFilms(query, by);
+        return buildResponseFilms(films);
     }
 
     private List<GenreWithId> checkAndRemoveDuplicateAndContains(List<GenreWithId> genre,
@@ -181,25 +200,6 @@ public class FilmService {
         return genreIds.stream()
                 .map(genreId -> new GenreWithIdAndName(genreId, mapAllGenres.get(genreId)))
                 .collect(Collectors.toList());
-    }
-
-    public List<FilmResponseDto> getFilmsByDirector(Long directorId, String sortBy) {
-        if (!directorRepository.findById(directorId).isPresent()) {
-            throw new NotFoundException("Режиссер не найден", directorId);
-        }
-
-        List<Film> films = directorRepository.findFilmsByDirectorSorted(directorId, sortBy);
-        return buildResponseFilms(films).stream().toList();
-    }
-
-    public Collection<FilmResponseDto> findCommonFilms(long userId, long friendId) {
-        Collection<Film> commonFilms = filmRepository.findCommonFilmsByUsers(userId, friendId);
-        return buildResponseFilms(commonFilms);
-    }
-
-    public Collection<FilmResponseDto> searchFilms(String query, List<String> by) {
-        Collection<Film> films = filmRepository.searchFilms(query, by);
-        return buildResponseFilms(films);
     }
 
     private Collection<FilmResponseDto> buildResponseFilms(Collection<Film> films) {

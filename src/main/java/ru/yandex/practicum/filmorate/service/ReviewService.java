@@ -55,9 +55,10 @@ public class ReviewService {
     public void deleteReview(long id) {
         log.info("Удаление отзыва с ID {}", id);
         getReviewOrThrow(id);
-        eventService.createEvent(getReviewById(id).getUserId(), id, EventType.REVIEW, OperationType.REMOVE);
-        log.info("deleteReview userId = {}, reviewId={}, EventType.REVIEW, OperationType.ADD", getReviewById(id).getUserId(), id);
+        long userId = getReviewById(id).getUserId();
         reviewRepository.delete(id);
+        eventService.createEvent(userId, id, EventType.REVIEW, OperationType.REMOVE);
+        log.info("deleteReview userId = {}, reviewId={}, EventType.REVIEW, OperationType.ADD", userId, id);
     }
 
     public ReviewDto getReviewById(long id) {
@@ -106,7 +107,7 @@ public class ReviewService {
         reviewLikeRepository.removeLike(reviewId, userId);
         updateReviewUsefulRating(reviewId);
         log.info("removeLikeFromReview userId = {}, reviewId={}, EventType.LIKE, OperationType.UPDATE", userId, reviewId);
-        eventService.createEvent(userId, reviewId, EventType.LIKE, OperationType.UPDATE);
+        eventService.createEvent(userId, reviewId, EventType.REVIEW, OperationType.REMOVE);
     }
 
     private Review getReviewOrThrow(long id) {
