@@ -202,7 +202,7 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    private Collection<FilmResponseDto> buildResponseFilms(Collection<Film> films) {
+    public Collection<FilmResponseDto> buildResponseFilms(Collection<Film> films) {
         Map<Long, List<Integer>> filmGenres = filmRepository.getAllFilmGenres();
         Map<Integer, String> allGenres = getMapGenres();
         Map<Long, List<DirectorDto>> filmDirectors = directorRepository.getAllFilmDirectors();

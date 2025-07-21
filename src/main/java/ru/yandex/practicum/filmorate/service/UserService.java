@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.dto.dtoclasses.FilmResponseDto;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.NullObject;
-import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.OperationType;
@@ -32,6 +31,7 @@ public class UserService {
     private final GenreRepository genreRepository;
     private final EventService eventService;
     private final DirectorRepository directorRepository;
+    private final FilmService filmService;
 
     public UserDto create(UserDto userDto) {
         log.trace("Сервисный метод добавление пользователя");
@@ -95,12 +95,7 @@ public class UserService {
 
     public Collection<FilmResponseDto> recommendationMovies(long id) {
         containsUser(id);
-        return filmRepository.recommendationMovies(id)
-                .stream()
-                .map(film -> {
-                    return FilmMapper.buildResponse(film, genreRepository.findAllGenresFilm(film.getId()), directorRepository.findAll());
-                })
-                .collect(Collectors.toList());
+        return filmService.buildResponseFilms(filmRepository.recommendationMovies(id));
     }
 
     public UserDto findById(Long id) {
