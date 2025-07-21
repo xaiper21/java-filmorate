@@ -110,10 +110,7 @@ public class ReviewService {
 
     private Review getReviewOrThrow(long id) {
         Optional<Review> review = reviewRepository.findOne(id);
-        if (review.isEmpty()) {
-            throw new NotFoundException("Отзыв", id);
-        }
-        return review.get();
+        return review.orElseThrow(() -> new NotFoundException("Отзыв", id));
     }
 
     private void checkUserExists(long userId) {
