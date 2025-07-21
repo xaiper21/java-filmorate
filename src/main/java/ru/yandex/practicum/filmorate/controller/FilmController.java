@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.create.FilmCreateRequestDto;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.FilmResponseDto;
@@ -21,7 +21,6 @@ import java.util.List;
 @RequestMapping("/films")
 @Slf4j
 @AllArgsConstructor
-@Validated
 public class FilmController {
     private final FilmService filmService;
 
@@ -56,9 +55,10 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<FilmResponseDto> getPopularFilms(@Positive @RequestParam(name = "count", defaultValue = "10") int count,
-                                                       @Positive @RequestParam(required = false) Integer genreId,
-                                                       @Positive @RequestParam(required = false) Integer year) {
+    public Collection<FilmResponseDto> getPopularFilms(
+            @Positive @RequestParam(name = "count", defaultValue = "10") int count,
+            @Positive @RequestParam(required = false) Integer genreId,
+            @Min(1895) @RequestParam(required = false) Integer year) {
         log.trace("Получить топ популярных фильмов, Year = {}, GenreId = {}, Count = {}", year, genreId, count);
         return filmService.getPopularFilms(count, genreId, year);
     }
@@ -69,7 +69,9 @@ public class FilmController {
     }
 
     @GetMapping("/director/{directorId}")
-    public List<FilmResponseDto> getFilmsByDirector(@PathVariable Long directorId, @RequestParam(required = false, defaultValue = "likes") String sortBy) {
+    public List<FilmResponseDto> getFilmsByDirector(
+            @PathVariable Long directorId,
+            @RequestParam(required = false, defaultValue = "likes") String sortBy) {
         return filmService.getFilmsByDirector(directorId, sortBy);
     }
 
