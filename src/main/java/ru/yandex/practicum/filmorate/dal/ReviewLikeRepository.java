@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public class ReviewLikeRepository {
-    private static final String INSERT_QUERY = "INSERT INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, ?)";;
+    private static final String INSERT_QUERY = "INSERT INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, ?)";
     private static final String DELETE_QUERY = "DELETE FROM review_likes WHERE review_id=? AND user_id=?";
     private static final String FIND_BY_REVIEW_AND_USER_QUERY = "SELECT * FROM review_likes WHERE review_id=? AND user_id=?";
     private static final String UPDATE_QUERY = "UPDATE review_likes SET is_like=? WHERE review_id=? AND user_id=?";
