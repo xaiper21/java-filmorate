@@ -75,8 +75,6 @@ class FilmorateApplicationTests {
         return userDto;
     }
 
-    ;
-
     private User getUpdatedUser() {
         User userDto = new User();
         userDto.setEmail("test2@example.com");

@@ -4,11 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.DirectorRepository;
+import ru.yandex.practicum.filmorate.dal.FilmRepository;
+import ru.yandex.practicum.filmorate.dal.GenreRepository;
 import ru.yandex.practicum.filmorate.dal.UserRepository;
+import ru.yandex.practicum.filmorate.dto.dtoclasses.FilmResponseDto;
 import ru.yandex.practicum.filmorate.dto.dtoclasses.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.NullObject;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.OperationType;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -21,6 +27,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final FilmRepository filmRepository;
+    private final GenreRepository genreRepository;
+    private final EventService eventService;
+    private final DirectorRepository directorRepository;
+    private final FilmService filmService;
 
     public UserDto create(UserDto userDto) {
         log.trace("Сервисный метод добавление пользователя");
@@ -45,15 +56,12 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    private void checkNameAndSet(User user) {
-        if (user.getName() == null || user.getName().isBlank()) user.setName(user.getLogin());
-    }
-
     public boolean addFriend(long id, long friendId) {
         log.trace("Сервисный метод создания дружбы");
         containsUser(id);
         containsUser(friendId);
         userRepository.addFriend(id, friendId);
+        eventService.createEvent(id, friendId, EventType.FRIEND, OperationType.ADD);
         return true;
     }
 
@@ -62,6 +70,7 @@ public class UserService {
         containsUser(id);
         containsUser(friendId);
         userRepository.deleteFriend(id, friendId);
+        eventService.createEvent(id, friendId, EventType.FRIEND, OperationType.REMOVE);
         return true;
     }
 
@@ -84,7 +93,28 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    void containsUser(long id) {
+    public Collection<FilmResponseDto> recommendationMovies(long id) {
+        containsUser(id);
+        return filmService.buildResponseFilms(filmRepository.recommendationMovies(id));
+    }
+
+    public UserDto findById(Long id) {
+        Optional<User> userOpt = userRepository.findOne(id);
+        return userOpt.map(UserMapper::mapToUserDto)
+                .orElseThrow(() -> new NotFoundException(User.class.getSimpleName(), id));
+    }
+
+    public void deleteUser(long id) {
+        if (!userRepository.delete(id)) {
+            throw new NotFoundException(User.class.getSimpleName(), id);
+        }
+    }
+
+    private void checkNameAndSet(User user) {
+        if (user.getName() == null || user.getName().isBlank()) user.setName(user.getLogin());
+    }
+
+    private void containsUser(long id) {
         Optional<User> user = userRepository.findOne(id);
         if (user.isEmpty()) throw new NotFoundException(User.class.getSimpleName(), id);
     }

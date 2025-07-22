@@ -19,4 +19,8 @@ public class GenreMapper {
     public static List<GenreWithId> mapToListGenreWithId(List<GenreWithIdAndName> genreWithIdAndNames) {
         return genreWithIdAndNames.stream().map(GenreMapper::mapToGenreWithId).collect(Collectors.toList());
     }
+
+    public static List<GenreWithId> mapToGenreWithId(List<GenreWithIdAndName> genreWithIdAndName) {
+        return genreWithIdAndName.stream().map(GenreMapper::mapToGenreWithId).collect(Collectors.toList());
+    }
 }
